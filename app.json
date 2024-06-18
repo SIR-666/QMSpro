@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "CILTpro",
+    "slug": "ciltpro",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#EBD9CD"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "deploymentTarget": "13.0",
+      "flipper": true,
+      "supportsTablet": true,
+      "bundleIdentifier": "com.greenfields.ciltpro"
+    },
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/ciltproicon.png",
+        "backgroundColor": "#228c4b",
+        "googleServiceFile": "process.env.GOOGLE_SERVICES_JSON"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBmLj_6tI-wVz3yrcNXg6qTi1VPAOmzMNY"
+        }
+      },
+      "package": "com.greenfields.ciltpro"
+    },
+    "web": {
+      "favicon": "./assets/ciltproicon.png"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a4ae85fb-1032-4d25-96db-142dc8ed4150"
+      }
+    },
+    "owner": "marjhy"
+  }
+}

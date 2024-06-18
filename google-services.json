@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "234969785717",
+    "project_id": "mobileaps-cff4b",
+    "storage_bucket": "mobileaps-cff4b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234969785717:android:c8e1123db7e8d668b75f3c",
+        "android_client_info": {
+          "package_name": "com.greenfields.greenshield"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4lLdAsVB1B9_Y8BkyjwnCqH13ALMIMmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
