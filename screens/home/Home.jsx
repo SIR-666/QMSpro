@@ -1,333 +1,389 @@
-import React, { useEffect, useState } from "react";
+// import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+// import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
-  ImageBackground,
+  Image,
+  Alert,
+  FlatList,
+  Dimensions,
 } from "react-native";
-import { ReusableText, HeightSpacer, Recommendations,ReusableBtn } from "../../components";
-import { useNavigation } from "@react-navigation/native";
+// import { Image } from "expo-image";
+import reusable from "../../components/Reusable/reusable.style";
+import {
+  AssetImage,
+  ReusableText,
+  HeightSpacer,
+  Recommendations,
+} from "../../components";
+import Places from "../../components/Home/Places";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
+import { AntDesign, Feather } from "@expo/vector-icons";
+// import styles from "./home.style";
+import BestHotels from "../../components/Home/BestHotels";
+import checkUser from "../../hook/checkUser";
+import { Color, FontFamily, FontSize, Border } from "../../GlobalStyles";
+import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function Home() {
-  const navigation = useNavigation();
+const { width } = Dimensions.get("window");
 
-  const [username, setUsername] = useState('');
-  const [idProfile, setIdProfile] = useState(null);
+const Home = ({ navigation }) => {
+  const { userLogin, userData, isLoading, time } = checkUser();
 
-  const handleMulaiPatroli = async () => {
-    navigation.navigate("ChecklistScreen", { idProfile });
-  }
+  const [username, setUsername] = useState("");
+  const [profile, setProfile] = useState("");
+
+  //Dimension
+  const { width, height } = Dimensions.get("window");
+
+  const data = [
+    {
+      id: 1,
+      title: "CILT",
+      image: require("../../assets/ciltproblack.png"),
+      link: "HomeCILT",
+    },
+
+    {
+      id: 2,
+      title: "HAND OVER",
+      image: require("../../assets/solidarity.png"),
+      link: "HomeHO",
+      // link: "ShiftHandOver",
+    },
+  ];
+
+  const [options, setOptions] = useState(data);
+
+  const showAlert = () => {
+    Alert.alert("Option selected");
+  };
 
   const fetchUserData = async () => {
     try {
       const urlApi = process.env.URL;
-      console.log(urlApi);
-      const email = await AsyncStorage.getItem('user');
-      const url = `${urlApi}/users?email=${email}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+      // console.log(urlApi);
+      const email = await AsyncStorage.getItem("user");
+      const fcmToken = await AsyncStorage.getItem("fcmToken");
+
+      // const profile = await AsyncStorage.getItem("profile");
+
+      console.log("fetchUserData email", email);
+      console.log("fetchUserData fcmToken", fcmToken);
+      // console.log("profile", profile);
+
+      const response1 = await fetch(`${urlApi}/getUser?email=${email}`);
+      const response2 = await fetch(`${urlApi}/findIdByTokenFcm/${fcmToken}`);
+
+      console.log("response1", response1);
+      console.log("response2", response2);
+
+      if (!response1.ok && !response2) {
+        throw new Error("Network response was not ok");
       }
-      const data = await response.json();
-      console.log(data)
-      setIdProfile(data.id);
+
+      const data = await response1.json();
+      const idToken = await response2.json();
+
+      console.log("data :", data);
+      console.log("idToken :", idToken);
+      // console.log("id Token :", idToken.id, "id User :", data.id);
+      const url = `${urlApi}/greenTAGuserFcm`; // Sesuaikan dengan URL endpoint Anda
+      const userData = {
+        id_greenTAGuser: data.id, // Ganti dengan ID pengguna yang sesuai
+        id_greenTAGfcm: idToken.id, // Ganti dengan FCM ID yang sesuai
+      };
+      const response = await axios.post(url, userData);
+      console.log("Response:", response.data);
+
       setUsername(data.username);
+      setProfile(data.profile);
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
+  // Panggil fungsi fetchUserData pada saat komponen di-mount
   useEffect(() => {
     fetchUserData();
+    console.log("width :", width, "height", height);
   }, []);
 
   return (
-    <View style={styles.home}>
-      <ImageBackground
-        style={styles.backgroundHeader}
-        source={require("../../assets/images/bgHeader.png")}
-      >
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>
-            Hai, <Text style={styles.boldText}>{username}</Text>
-          </Text>
-        </View>
-      </ImageBackground>
-      <ImageBackground
-        style={styles.card}
-        source={require("../../assets/images/simcard.png")}
-      >
-        <HeightSpacer height={10} />
-        <View style={styles.atas}>
-          <View style={styles.atasItem}>
-            <Text style={styles.largeText}>10040600</Text>
-          </View>
-          <View style={styles.atasItem}>
-            <View>
-              <Text style={styles.headerText}>
-                green<Text style={styles.boldText}>SHIELD</Text>
-              </Text>
-            </View>
-          </View>
-        </View>
-        <HeightSpacer height={10} />
+    // <View style={styles.home}>
+    <View style={styles.container}>
+      <View style={styles.header2}>
+        <Image
+          style={styles.icon}
+          // width="100%"
+          // height="100%"
+          contentFit="cover"
+          source={require("../../assets/images/bgLong.png")}
+        />
+        {/* <Text style={styles.mainTitle}>Greenfields</Text> */}
+      </View>
 
-        <View style={styles.atas}>
-          <View style={styles.atasItem}>
-            <Text style={styles.mediumText}>Jam Patroli</Text>
-            <Text style={styles.largeText}>345 Jam</Text>
-          </View>
-          <View style={styles.atasItem}>
-            <TouchableOpacity style={styles.button} onPress={handleMulaiPatroli}>
-              <Text style={styles.buttonText}>Mulai Patroli</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <HeightSpacer height={10} />
+      <View style={styles.user}>
+        <Text style={styles.driver}>{profile}</Text>
+        <Text style={styles.userLogin}>{username}</Text>
+        {/* <Text style={styles.driver}>Operator</Text>
+        <Text style={styles.userLogin}>Purnomo</Text> */}
 
-        <View style={styles.atas}>
-          <View style={styles.atasItem}>
-            <Text style={styles.smallText}>Update 14 Mei 2024</Text>
-          </View>
-          <View style={styles.atasItem}>
-            <View style={styles.pointsContainer}>
-              <View style={styles.points}>
-                <Text style={styles.pointsText}>172</Text>
+        <Image
+          style={styles.userChild}
+          contentFit="cover"
+          source={require("../../assets/ellipse-20.png")}
+        />
+      </View>
+
+      <HeightSpacer height={80} />
+
+      <FlatList
+        style={styles.list}
+        contentContainerStyle={styles.listContainer}
+        data={options}
+        horizontal={false}
+        numColumns={2}
+        keyExtractor={(item) => {
+          return item.id;
+        }}
+        renderItem={({ item }) => {
+          return (
+            <TouchableOpacity
+              style={width < 720 ? styles.card : styles.cardTablet}
+              onPress={() => {
+                var add = item.link;
+                console.log(add);
+                if (add == "Search") {
+                  Alert.alert(
+                    "Menu belum tersedia",
+                    "Fitur ini sedang dipersiapkan, tunggu tanggal mainnya..."
+                  );
+                } else {
+                  navigation.navigate(add);
+                }
+              }}
+            >
+              <View style={styles.cardFooter}></View>
+              <Image
+                style={width < 720 ? styles.cardImage : styles.cardImageTablet}
+                source={item.image}
+              />
+              <View style={styles.cardHeader}>
+                <View
+                  style={{ alignItems: "center", justifyContent: "center" }}
+                >
+                  <Text style={styles.title}>{item.title}</Text>
+                </View>
               </View>
-            </View>
-          </View>
-        </View>
-      </ImageBackground>
-      <View style={styles.stats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>034</Text>
-          <Text style={styles.statLabel}>Km</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>95%</Text>
-          <Text style={styles.statLabel}>Close</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>23</Text>
-          <Text style={styles.statLabel}>Kasus</Text>
-        </View>
-      </View>
-
-      <HeightSpacer height={35} />
-
-      <View style={styles.listPatrol}>
-        <TouchableOpacity style={styles.buttonPatrol} onPress={() => navigation.navigate("ListRecordPatrol") }>
-          <Text style={styles.buttonText}>Patrol</Text>
-        </TouchableOpacity>
-
-        <HeightSpacer height={20} />
-
-        <TouchableOpacity style={styles.buttonPatrol} onPress={() => navigation.navigate("ListRecordPatrolAsDarft")}>
-          <Text style={styles.buttonText}>Draft</Text>
-        </TouchableOpacity>
-      </View>
-
- 
-
-      {/* <View style={styles.listPatrol}>
-        <ReusableBtn
-          onPress={() => handleTemuan("Aman")}
-          btnText={'Patrol'}
-          textColor={COLORS.black}
-          width={"95%"}
-          backgroundColor={'#18DE75'}
-          // borderWidth={0.5}
-          // borderColor={COLORS.black}
-        />
-            
-        <HeightSpacer height={20} />
-
-        <ReusableBtn
-          onPress={() => handleTemuan("Aman")}
-          btnText={'Draft'}
-          textColor={COLORS.black}
-          width={"95%"}
-          backgroundColor={'#18DE75'}
-          // borderWidth={0.5}
-          // borderColor={COLORS.black}
-        />
-    
-      </View> */}
-
-
-
+            </TouchableOpacity>
+          );
+        }}
+      />
+      <Text style={styles.versionStyle}>{process.env.VERSION}</Text>
     </View>
   );
-}
-
+};
 
 const styles = StyleSheet.create({
-  home: {
-    // flex: 1,
-    backgroundColor: "#F8F8F8",
-    // alignItems: "center",
-    // paddingLeft: 20,
+  container: {
+    flex: 1,
+    marginTop: 1,
   },
-  backgroundHeader: {
-    width: "100%",
-    height: 250,
-    paddingVertical: 60,
-    justifyContent: "center",
+  list: {
+    paddingHorizontal: 5,
+    // backgroundColor: "#E6E6E6",
   },
-  headerTextX: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "bold",
-    marginLeft: 20,
-    fontFamily: "GoogleSans-Regular", // Ensure you have this font loaded
-    // marginTop: 20,
-    marginBottom: 100,
-    textAlign: "left",
-  },
-  headerTextContainer: {
-    marginLeft: 20,
-    marginBottom: 80,
-  },
-  headerText: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontFamily: "GoogleSans-Regular", // Ensure you have this font loaded
-    textAlign: "left",
-  },
-  boldText: {
-    fontWeight: "bold",
-    fontFamily: "GoogleSans-Bold", // Ensure you have this font loaded
-  },
-  card: {
-    // backgroundColor: "#21B366",
-    width: "95%",
-    height: 200,
-    position: "absolute",
-    marginTop: 120,
-    marginLeft: 20,
-    // paddingVertical: 5,
+  listContainer: {
     alignItems: "center",
   },
-  atas: {
-    flexDirection: "row",
-    justifyContent: "center",
-    // borderWidth: 1,
-    // borderColor: "#FFFFFF",
-    marginRight: 20,
-  },
-  atasItem: {
-    alignItems: "center",
-    // borderWidth: 1,
-    // borderColor: "#FFFFFF",
-    width: "50%",
-    justifyContent: "center",
-  },
-  stats: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "95%",
-    marginTop: 100,
-    marginLeft: 10,
-    marginRight: 10,
-    padding: 10,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
-  },
-  largeNumber: {
-    fontSize: 28,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  mediumText: {
-    fontSize: 16,
-    color: "#DDDDDD",
-    marginVertical: 5,
-  },
-  largeText: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  smallText: {
-    fontSize: 15,
-    color: "#DDDDDD",
-    marginBottom: 10,
-    fontWeight: "bold",
-  },
-  pointsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  points: {
-    backgroundColor: "#F7B731",
-    borderRadius: 5,
-    paddingVertical: 3,
-    paddingHorizontal: 7,
-    // marginLeft: 5,
-    alignItems: "center",
-  },
-  pointsText: {
-    color: "#1E2732",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  button: {
-    backgroundColor: "#18DE75",
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
-    
+  /******** card **************/
+  cardX: {
+    shadowColor: "#00000021",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.37,
+    shadowRadius: 7.49,
+
+    elevation: 12,
+    marginVertical: 10,
+    backgroundColor: "white",
+    flexBasis: "42%",
+    marginHorizontal: 10,
   },
 
-  statItem: {
+  card: {
+    flexDirection: "row",
     alignItems: "center",
-    width: "30%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    marginVertical: 10,
+    marginHorizontal: 20,
+    paddingRight: 100,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    width: width - 50, // Subtract 40 from the total width to account for padding
   },
-  statNumber: {
-    fontSize: 22,
-    color: "#EC2028",
-    fontWeight: "bold",
+
+  cardTablet: {
+    shadowColor: "#00000021",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.37,
+    shadowRadius: 7.49,
+    elevation: 12,
+    marginVertical: 10,
+    backgroundColor: "white",
+    flexBasis: "42%",
+    marginHorizontal: 10,
+    borderRadius: 20,
   },
-  statLabel: {
-    fontSize: 16,
-    color: "#747D8C",
-  },
-  listPatrol : {
+  cardHeader: {
+    paddingVertical: 17,
+    paddingHorizontal: 16,
+    borderTopLeftRadius: 1,
+    borderTopRightRadius: 1,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+  },
+  cardContent: {
+    paddingVertical: 12.5,
+    paddingHorizontal: 16,
+  },
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 12.5,
+    paddingBottom: 25,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 1,
+    borderBottomRightRadius: 1,
+  },
+  cardImage: {
+    height: 50,
+    width: 50,
+    alignSelf: "center",
+  },
+  cardImageTablet: {
+    height: 90,
+    width: 90,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 18,
+    flex: 1,
+    alignSelf: "center",
+    color: "#696969",
+  },
+  header: {
+    top: 50,
+    backgroundColor: Color.colorLightsteelblue,
+    height: 179,
+    overflow: "hidden",
+  },
+  /******** header **************/
+  barPosition: {
     width: "100%",
-    
-  },buttonPatrol: {
-    backgroundColor: "#18DE75",
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    width: "95%",
-    height: 70,
-    alignItems: 'center',
-    alignSelf: 'center',  // Menengahkan tombol secara horizontal
+    // height: "100%",
+    left: 0,
+    position: "absolute",
   },
-  buttonPatrol: {
-    backgroundColor: "#18DE75",
-    borderRadius: 5,
-    paddingTop: 25,
-    width: "95%",
-    height: 70,
-    alignItems: 'center',
-    alignSelf: 'center',  
+  header2: {
+    top: 10,
+    backgroundColor: Color.colorLightsteelblue,
+    height: 230,
+    overflow: "hidden",
+  },
+  mainTitle: {
+    top: 54,
+    fontSize: 40,
+    letterSpacing: -1,
+    // fontFamily: FontFamily.timmana,
+    color: Color.colorBlack,
+    width: 285,
+    height: 99,
+    textAlign: "left",
+    textTransform: "uppercase",
+    lineHeight: 38,
+    left: 25,
+    position: "absolute",
+  },
+  icon: {
+    top: -113,
+    // right: -10,
+    // width: 329,
+    // height: 232,
+    left: -350,
+    // position: "absolute",
+  },
+  user: {
+    top: 212,
+    width: 309,
+    height: 68,
+    borderRadius: Border.br_3xs,
+    left: 25,
+    position: "absolute",
+    overflow: "hidden",
+    backgroundColor: Color.colorWhite,
+    borderColor: Color.colorSilver,
+    borderWidth: 2,
+  },
+  driver: {
+    top: 26,
+    fontSize: 14,
+    height: 40,
+    width: 169,
+    left: 28,
+    color: Color.colorBlack,
+    // fontFamily: FontFamily.poppinsRegular,
+    textAlign: "left",
+    textTransform: "uppercase",
+    lineHeight: 38,
+    position: "absolute",
+  },
+  userLogin: {
+    // fontFamily: FontFamily.poppinsBold,
+    fontWeight: "700",
+    fontSize: FontSize.size_base,
+    height: 40,
+    width: 169,
+    left: 28,
+    color: Color.colorBlack,
+    top: 4,
+    textAlign: "left",
+    textTransform: "uppercase",
+    lineHeight: 38,
+    position: "absolute",
+  },
+  userChild: {
+    top: 12,
+    left: 240,
+    width: 44,
+    height: 44,
+    position: "absolute",
+  },
+  versionStyle: {
+    paddingLeft: 25,
+    paddingBottom: 110,
+    fontSize: 20,
+    opacity: 0.3,
   },
 });
+
+export default Home;

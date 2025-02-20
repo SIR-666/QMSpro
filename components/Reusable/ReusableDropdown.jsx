@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import styles from "./signin.style";
 import React, { useState } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { WidthSpacer, HeightSpacer, ReusableBtn, AppBar } from "..";

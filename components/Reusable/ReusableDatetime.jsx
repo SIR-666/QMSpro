@@ -1,25 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Button,
-  Pressable,
-  Platform,
-} from "react-native";
-import styles from "./signin.style";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  WidthSpacer,
-  HeightSpacer,
-  ReusableBtn,
-  AppBar,
-} from "../../components";
 
 const ReusableDatetime = ({
   date,
@@ -28,32 +9,57 @@ const ReusableDatetime = ({
   onDateChange,
 }) => {
   const currentDate = date || new Date(); // Use current date if 'date' is null
+  const [showTimePicker, setShowTimePicker] = useState(false); // For time picker
+
+  const onChange = (event, selectedDate) => {
+    setShowDatePicker(false); // Hide date picker after selection
+    if (selectedDate) {
+      onDateChange(event, selectedDate);
+      setShowTimePicker(true); // Open time picker after selecting date
+    }
+  };
+
+  const onTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false); // Hide time picker after selection
+    if (selectedTime) {
+      onDateChange(event, selectedTime); // Pass the updated time back
+    }
+  };
 
   return (
     <View>
-      {/* Component Text yang dapat diklik */}
       <TouchableOpacity onPress={() => setShowDatePicker(true)}>
         <View
           style={{
             padding: 10,
-            //   backgroundColor: "#e0e0e0",
             borderRadius: 5,
           }}
         >
-          <Text>{`${currentDate.toDateString()}`}</Text>
-          {/* <Text>{`Selected Date: `}</Text> */}
+          <Text>{`${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`}</Text>
         </View>
       </TouchableOpacity>
 
-      {/* Component DateTimePicker yang muncul saat di-klik */}
+      {/* Date Picker */}
       {showDatePicker && (
         <DateTimePicker
-          testID="dateTimePicker"
+          testID="datePicker"
           value={currentDate}
           mode="date"
           is24Hour={true}
           display="default"
-          onChange={onDateChange}
+          onChange={onChange}
+        />
+      )}
+
+      {/* Time Picker */}
+      {showTimePicker && (
+        <DateTimePicker
+          testID="timePicker"
+          value={currentDate}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={onTimeChange}
         />
       )}
     </View>

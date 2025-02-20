@@ -1,4 +1,14 @@
-import { TextInput, Text, View, TouchableOpacity, Alert, Button, Image, Modal, Dimensions } from "react-native";
+import {
+  TextInput,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  Button,
+  Image,
+  Modal,
+  Dimensions,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import styles from "./signin.style";
 import { Formik } from "formik";
@@ -10,7 +20,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import reusable from "../../components/Reusable/reusable.style";
 import { AntDesign } from "@expo/vector-icons";
-import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import { FontSize } from "../../GlobalStyles";
 
 const validationSchema = Yup.object().shape({
@@ -25,35 +39,24 @@ const Signin = ({ navigation }) => {
   const [responseData, setResponseData] = useState(null);
   const [obsecureText, setObsecureText] = useState(true);
 
-
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [userInfo, setUserInfo] = useState(null);
 
- // Auth With Strapi
-  const [fieldStrapi, setFieldStrapi] = useState(true);
+  // Auth With Strapi
+  const [fieldStrapi, setFieldStrapi] = useState(false);
 
   //email and password strapi
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   //Dimension
-  const { width, height } = Dimensions.get('window');
-  
-  
-
-
-
-
-
-
-
+  const { width, height } = Dimensions.get("window");
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: "1072980362374-9v923hrs55025ln82l5723ji70dnr4dg.apps.googleusercontent.com"
+      webClientId:
+        "1072980362374-9v923hrs55025ln82l5723ji70dnr4dg.apps.googleusercontent.com",
     });
-   
-    
   }, []);
 
   const errorLogin = () => {
@@ -73,15 +76,9 @@ const Signin = ({ navigation }) => {
   const login = async (values) => {
     setLoader(true);
 
-    //https://travelappbackend-production.up.railway.app
-    //http://localhost:5003
-
     const apiUrl2 = process.env.URL;
 
     try {
-      // const endpoint = "http://10.24.5.40:5003/api/login";
-      // const endpoint = "http://192.168.1.8:5003/api/login";
-      // const endpoint = `${apiUrl2}:${port3}/api/login`;
       const endpoint = `${apiUrl2}/login`;
       console.log(endpoint);
 
@@ -97,7 +94,7 @@ const Signin = ({ navigation }) => {
         );
         console.log("response.data.token ", response.data.token);
 
-        await AsyncStorage.setItem('user',values.email)
+        await AsyncStorage.setItem("user", values.email);
         navigation.replace("Bottom");
       } else {
         Alert.alert("Error Logging in ", "Please provide valid credentials ", [
@@ -134,7 +131,6 @@ const Signin = ({ navigation }) => {
     }
   };
 
-
   const addUser = async (userData) => {
     const apiUrl2 = process.env.URL;
     try {
@@ -145,16 +141,13 @@ const Signin = ({ navigation }) => {
       if (error.response) {
         //console.error('Error responseee:', error.response.data);
       } else if (error.request) {
-        console.error('No response received:', error.request);
+        console.error("No response received:", error.request);
       } else {
-        console.error('Error:', error.message);
+        console.error("Error:", error.message);
       }
       throw error; // Melempar error agar dapat ditangkap di tempat lain
     }
   };
-
-
-
 
   const googleSignIn = async () => {
     try {
@@ -162,61 +155,34 @@ const Signin = ({ navigation }) => {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       setUserInfo(userInfo);
-      setError('');
-      await AsyncStorage.setItem('user',userInfo.user.email)
-      await AsyncStorage.setItem('googleSignIn','ada')
+      setError("");
+      await AsyncStorage.setItem("user", userInfo.user.email);
+      await AsyncStorage.setItem("googleSignIn", "ada");
       const email = userInfo.user.email;
-      const userData = { email: email, password: "null", username: email.split('@')[0], profile: 'user' };
-      addUser(userData)
+      const userData = {
+        email: email,
+        password: "null",
+        username: email.split("@")[0],
+        profile: "user",
+      };
+      addUser(userData);
       navigation.replace("Bottom");
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
-        setError('Login Cancelled');
+        setError("Login Cancelled");
       } else if (error.code === statusCodes.IN_PROGRESS) {
         // operation (e.g. sign in) is in progress already
-        setError('Login in progress');
+        setError("Login in progress");
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         // play services not available or outdated
-        setError('Play Services not available or outdated');
+        setError("Play Services not available or outdated");
       } else {
         // some other error happened
         setError(error.message);
       }
     }
   };
-
-  // const handleStrapiSignIn = async () => {
-  //   const urlGreat = process.env.URL_LOGIN_GREAT;
-  //   try {
-  //     // Lakukan tindakan yang diperlukan di sini menggunakan email dan password
-  //     const res = await fetch(`http://10.24.0.155:3000/api/login`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         identifier: 'hafizsatiria@student.ub.ac.id',
-  //         password: 'Hafizsatiria321>'
-  //       }),
-  //     });
-  //     if (res.ok) {
-  //       await AsyncStorage.setItem('user', 'hafizsatiria@student.ub.ac.id');
-  //       navigation.replace("Bottom");
-  //     } else {
-  //       // Tangani kasus respons lainnya (misalnya, jika respon tidak 200)
-  //       console.error('Error during sign-in:', res.status);
-  //       // Tampilkan pesan kesalahan
-  //       Alert.alert("Login Error", "An error occurred during login.");
-  //     }
-  //   } catch (error) {
-  //     // Tangani kesalahan yang terjadi selama proses login
-  //     console.error('Error during sign-in:', error);
-  //     // Tampilkan pesan kesalahan
-  //     Alert.alert("Login Error", "An error occurred during login.");
-  //   }
-    
-  // }
 
   const handleStrapiSignIn = async (values) => {
     const urlGreat = process.env.URL_LOGIN_GREAT;
@@ -233,55 +199,39 @@ const Signin = ({ navigation }) => {
       });
       if (res.ok) {
         const responseData = await res.json(); // Mengambil data JSON dari respons
-        await AsyncStorage.setItem('user', responseData.user.email);
-        const userData = { email: responseData.user.email, password: "null", username: responseData.user.username, profile: 'user' };
-        addUser(userData)
+        await AsyncStorage.setItem("user", responseData.user.email);
+        const userData = {
+          email: responseData.user.email,
+          password: "null",
+          username: responseData.user.username,
+          profile: "user",
+        };
+        addUser(userData);
         navigation.replace("Bottom");
       } else {
-        console.error('Error during sign-in:', res.status);
+        console.error("Error during sign-in:", res.status);
         Alert.alert("Login Error", "An error occurred during login.");
       }
     } catch (error) {
-      console.error('Error during sign-in:', error);
+      console.error("Error during sign-in:", error);
       Alert.alert("Login Error", "An error occurred during login.");
     }
   };
-  
-
-  
-  
-
 
   const strapiSignIn = async () => {
     setFieldStrapi(true);
-  }
+  };
 
   const defaultSignIn = async () => {
     setFieldStrapi(false);
-  }
-
-
-
-
-  // const signOut = async () => {
-  //   try {
-  //     await GoogleSignin.revokeAccess();
-  //     await GoogleSignin.signOut();
-  //     setUserInfo(null);
-  //   } catch (error) {
-  //     console.error('Error signing out: ', error);
-  //   }
-  // };
+  };
 
   useEffect(() => {
-    console.log(fieldStrapi)
+    console.log(fieldStrapi);
   }, [fieldStrapi]);
-
-
 
   return (
     <View style={styles.container}>
-
       <Formik
         initialValues={{ email: "", password: "" }}
         validationSchema={validationSchema}
@@ -324,9 +274,7 @@ const Signin = ({ navigation }) => {
                       setFieldTouched("email", "");
                     }}
                     value={values.email}
-                    onChangeText={
-                      handleChange("email")
-                    }
+                    onChangeText={handleChange("email")}
                     autoCapitalize="none"
                     autoCorrect={false}
                     style={{ flex: 1 }}
@@ -386,7 +334,7 @@ const Signin = ({ navigation }) => {
               </View>
             </View>
 
-            <HeightSpacer height={20} />  
+            <HeightSpacer height={20} />
 
             <View style={reusable.rowWithSpace("space-between")}>
               <AntDesign
@@ -408,77 +356,66 @@ const Signin = ({ navigation }) => {
                   borderWidth={0}
                   textColor={COLORS.white}
                 />
-
               ) : (
-
                 <ReusableBtn
-                onPress={isValid ? ()=> handleStrapiSignIn(values): errorLogin}
-                btnText={"SIGN IN WITH GREAT"}
-                width={SIZES.width - 100}
-                backgroundColor={COLORS.green}
-                borderColor={COLORS.green}
-                borderWidth={0}
-                textColor={COLORS.white}
-              />
+                  onPress={
+                    isValid ? () => handleStrapiSignIn(values) : errorLogin
+                  }
+                  btnText={"SIGN IN WITH GREAT"}
+                  width={SIZES.width - 100}
+                  backgroundColor={COLORS.green}
+                  borderColor={COLORS.green}
+                  borderWidth={0}
+                  textColor={COLORS.white}
+                />
               )}
-
-
-
-
-
-              
             </View>
 
-
-
-            <View style={reusable.rowWithSpace("space-between")}> 
-
-               {/* Start Sign In Google*/}    
+            <View style={reusable.rowWithSpace("space-between")}>
+              {/* Start Sign In Google*/}
               <TouchableOpacity onPress={googleSignIn}>
                 <View style={styles.wrapperAuth}>
                   <View>
                     <View style={styles.inputWrapperAuth(COLORS.black)}>
                       <Image
-                        source={require('../../assets/google-icon.png')}
-
+                        source={require("../../assets/google-icon.png")}
                         style={{ width: 25, height: 25 }}
                       />
-                      <Text style={{ fontWeight: 'bold' }}> o o g l e</Text>
+                      <Text style={{ fontWeight: "bold" }}> o o g l e</Text>
                     </View>
                   </View>
                 </View>
               </TouchableOpacity>
               {/* end Sign In Google */}
 
-
-
-
               {fieldStrapi ? (
                 <TouchableOpacity onPress={defaultSignIn}>
-                <View style={styles.wrapperAuth}>
-                  <View>
-                    <View style={styles.inputWrapperAuth(COLORS.black)}>
-                      <Text> Great</Text>
+                  <View style={styles.wrapperAuth}>
+                    <View>
+                      <View style={styles.inputWrapperAuth(COLORS.black)}>
+                        <Text> Great</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-
+                </TouchableOpacity>
               ) : (
                 <TouchableOpacity onPress={strapiSignIn}>
                   <View style={styles.wrapperAuth}>
                     <View>
                       <View style={styles.inputWrapperAuth(COLORS.black)}>
-                        <AntDesign name="arrowleft" size={24} color={COLORS.black} />
-                        <Text style={{ fontWeight: 'bold', marginLeft: 10 }}>Back</Text>
+                        <AntDesign
+                          name="arrowleft"
+                          size={24}
+                          color={COLORS.black}
+                        />
+                        <Text style={{ fontWeight: "bold", marginLeft: 10 }}>
+                          Back
+                        </Text>
                       </View>
                     </View>
                   </View>
                 </TouchableOpacity>
               )}
-
-
-
             </View>
           </View>
         )}

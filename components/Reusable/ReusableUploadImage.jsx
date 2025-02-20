@@ -8,12 +8,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   TouchableWithoutFeedback,
-  ActivityIndicator // Close modal area luar
+  ActivityIndicator,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker"; // Pastikan Anda sudah menginstal expo-image-picker
+import * as ImagePicker from "expo-image-picker";
 import { ReusableBtn } from "../../components";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const ReusableUploadImage = ({
   onImagePathChange,
@@ -22,9 +21,7 @@ const ReusableUploadImage = ({
   initialImage,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(
-    initialImage ? [initialImage] : []
-  );
+  const [selectedImage, setSelectedImage] = useState(initialImage || "");
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -35,14 +32,15 @@ const ReusableUploadImage = ({
 
   useEffect(() => {
     if (initialImage) {
-      setSelectedImage([initialImage]);
+      setSelectedImage(initialImage);
       setImage(initialImage);
       onImagePathChange(initialImage);
     }
   }, [initialImage]);
 
   const pickImageAndUpload = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
       alert("You've refused to allow this app to access your photos!");
       return;
@@ -56,7 +54,7 @@ const ReusableUploadImage = ({
 
     if (!pickerResult.canceled) {
       const newImageUri = pickerResult.assets[0].uri;
-      await uploadImage(newImageUri); // Pass the URI directly
+      await uploadImage(newImageUri);
     }
   };
 
@@ -74,7 +72,7 @@ const ReusableUploadImage = ({
 
     if (!cameraResult.canceled) {
       const newImageUri = cameraResult.assets[0].uri;
-      await uploadImage(newImageUri); // Pass the URI directly
+      await uploadImage(newImageUri);
     }
   };
 
@@ -84,8 +82,8 @@ const ReusableUploadImage = ({
 
     formData.append("images", {
       uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
-      type: "image/jpeg", // Adjust based on your image type
-      name: uri.split("/").pop(), // This ensures the file has a name
+      type: "image/jpeg",
+      name: uri.split("/").pop(),
     });
 
     if (image) {
@@ -103,7 +101,7 @@ const ReusableUploadImage = ({
           console.log("image gagal di hapus ", responseJson);
         }
       } catch (error) {
-        console.error("Data baru");
+        console.error("Error deleting image:", error);
       }
     }
 
@@ -125,40 +123,21 @@ const ReusableUploadImage = ({
     }
   };
 
-  useEffect(() => {
-    console.log(" data baru uploade image ", image);
-  }, [image]);
-
   return (
     <View style={styles.container}>
       {loading ? (
         <ActivityIndicator size="large" color={COLORS.green} />
       ) : (
         <>
-          {selectedImage == "" ? (
-            <ReusableBtn
-              btnText={judul}
-              onPress={() => setModalVisible(true)}
-              width={SIZES.width - 250}
-              backgroundColor={COLORS.green}
-              borderColor={COLORS.green}
-              borderWidth={0}
-              textColor={COLORS.white}
-            />
-          ) : (
-            <View style={styles.btnView}>
-              <ReusableBtn
-                btnText={"GANTI FOTO"}
-                onPress={() => setModalVisible(true)}
-                width={SIZES.width - 250}
-                backgroundColor={COLORS.red}
-                borderColor={COLORS.green}
-                borderWidth={0}
-                textColor={COLORS.white}
-              />
-            </View>
-          )}
-
+          <ReusableBtn
+            btnText={selectedImage ? "GANTI FOTO" : judul}
+            onPress={() => setModalVisible(true)}
+            width={SIZES.width - 250}
+            backgroundColor={COLORS.green}
+            borderColor={COLORS.green}
+            borderWidth={0}
+            textColor={COLORS.white}
+          />
           <Modal
             animationType="slide"
             transparent={true}
@@ -177,9 +156,9 @@ const ReusableUploadImage = ({
                       btnText={"PILIH FOTO"}
                       onPress={() => {
                         pickImageAndUpload();
-                        setModalVisible(!modalVisible);
+                        setModalVisible(false);
                       }}
-                      width={'50%'}
+                      width={"50%"}
                       backgroundColor={COLORS.green}
                       borderColor={COLORS.green}
                       borderWidth={0}
@@ -190,9 +169,9 @@ const ReusableUploadImage = ({
                       btnText={"AMBIL FOTO"}
                       onPress={() => {
                         takePhoto();
-                        setModalVisible(!modalVisible);
+                        setModalVisible(false);
                       }}
-                      width={'50%'}
+                      width={"50%"}
                       backgroundColor={COLORS.green}
                       borderColor={COLORS.green}
                       borderWidth={0}

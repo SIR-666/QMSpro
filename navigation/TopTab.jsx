@@ -35,7 +35,7 @@ const TopTab = ({ navigation }) => {
   const handleLogOut = async () => {
     const googleSignIn = await AsyncStorage.getItem("googleSignIn");
     // navigation.replace("AuthTop");
-   
+
     if (googleSignIn) {
       GoogleSignin.configure({
         webClientId:
@@ -130,10 +130,10 @@ const TopTab = ({ navigation }) => {
             // mode={"contain"}
           /> */}
           <AssetImage
-            data={require("../assets/images/bg3.png")}
+            data={require("../assets/images/bgLong.png")}
             width={"100%"}
             height={270}
-            // mode={"contain"}
+            mode={"contain"}
           />
 
           <HeightSpacer height={90} />

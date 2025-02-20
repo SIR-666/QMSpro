@@ -3,7 +3,7 @@
     "name": "CILTpro",
     "slug": "ciltpro",
     "version": "1.0.0",
-    "orientation": "default",
+    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -11,9 +11,7 @@
       "resizeMode": "cover",
       "backgroundColor": "#EBD9CD"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "deploymentTarget": "13.0",
       "flipper": true,
@@ -23,8 +21,8 @@
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/ciltproicon.png",
-        "backgroundColor": "#228c4b",
+        "foregroundImage": "./assets/ciltproicon2.png",
+        "backgroundColor": "#f1f1f1",
         "googleServiceFile": "process.env.GOOGLE_SERVICES_JSON"
       },
       "config": {
@@ -35,7 +33,7 @@
       "package": "com.greenfields.ciltpro"
     },
     "web": {
-      "favicon": "./assets/ciltproicon.png"
+      "favicon": "./assets/ciltproicon2.png"
     },
     "plugins": [
       [
@@ -45,13 +43,19 @@
             "usesCleartextTraffic": true
           }
         }
+      ],
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "PORTRAIT"
+        }
       ]
     ],
     "extra": {
       "eas": {
-        "projectId": "a4ae85fb-1032-4d25-96db-142dc8ed4150"
+        "projectId": "2fd04d08-786b-4fef-883b-ad00d09fe4b0"
       }
     },
-    "owner": "marjhy"
+    "owner": "raffyjo"
   }
 }

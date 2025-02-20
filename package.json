@@ -1,5 +1,5 @@
 {
-  "name": "greenshield",
+  "name": "ciltpro",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -62,7 +62,8 @@
     "react-native-textarea": "^1.0.4",
     "react-native-vector-icons": "^10.0.0",
     "react-toastify": "^10.0.5",
-    "yup": "^1.2.0"
+    "yup": "^1.2.0",
+    "expo-screen-orientation": "~6.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

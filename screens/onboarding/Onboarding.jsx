@@ -13,17 +13,19 @@ const Onboarding = () => {
       {
         id: 1,
         image: require("../../assets/images/1.png"),
-        title: "Melindungi dengan Integritas, Melayani dengan Dedikasi",
+        title:
+          "Taklukkan unplanned downtime, tingkatkan produktivitas, dan hemat biaya perbaikan dengan pemeliharaan terjadwal!",
       },
       {
         id: 2,
         image: require("../../assets/images/2.png"),
-        title: "Setia Melindungi, Profesional Melayani",
+        title: "Cleaning Excellence: Less Rejects, More Perfect Products!",
       },
       {
         id: 3,
         image: require("../../assets/images/3.png"),
-        title: "Tanggap, Tegas, Terpercaya",
+        title:
+          "Optimalkan performa peralatan dengan jadwal rutin CILT yang presisi dan sesuai jadwal!",
       },
     ];
   } else {
@@ -31,17 +33,19 @@ const Onboarding = () => {
       {
         id: 1,
         image: require("../../assets/images/6.jpg"),
-        title: "Melindungi dengan Integritas, Melayani dengan Dedikasi",
+        title:
+          "Taklukkan unplanned downtime, tingkatkan produktivitas, dan hemat biaya perbaikan dengan pemeliharaan terjadwal!",
       },
       {
         id: 2,
         image: require("../../assets/images/4.jpg"),
-        title: "Setia Melindungi, Profesional Melayani",
+        title: "Cleaning Excellence: Less Rejects, More Perfect Products!",
       },
       {
         id: 3,
         image: require("../../assets/images/5.jpg"),
-        title: "Tanggap, Tegas, Terpercaya",
+        title:
+          "Optimalkan performa peralatan dengan jadwal rutin CILT yang presisi dan sesuai jadwal!",
       },
     ];
   }

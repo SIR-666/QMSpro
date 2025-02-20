@@ -7,8 +7,7 @@ import { COLORS, SIZES, TEXT } from "../../constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { WidthSpacer, HeightSpacer, ReusableBtn } from "../../components";
 import axios from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const validationSchema = Yup.object().shape({
   password: Yup.string()
@@ -104,14 +103,15 @@ const Registration = () => {
     }
   };
 
-
-
-  
-
   return (
     <View style={styles.container}>
       <Formik
-        initialValues={{ email: "", password: "", username: "", profile: "user" }}
+        initialValues={{
+          email: "",
+          password: "",
+          username: "",
+          profile: "user",
+        }}
         validationSchema={validationSchema}
         onSubmit={(values) => {
           register(values);

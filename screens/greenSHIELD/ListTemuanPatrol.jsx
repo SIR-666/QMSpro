@@ -11,7 +11,7 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import axios from "axios";
 import { COLORS, SIZES, TEXT } from "../../constants/theme";
@@ -24,26 +24,29 @@ import {
   WidthSpacer,
   HeightSpacer,
 } from "../../components";
-import * as ImagePicker from "expo-image-picker";
 import reusable from "../../components/Reusable/reusable.style";
 import { SafeAreaView } from "react-native-safe-area-context";
-import NfcManager, { NfcTech, Ndef, NdefFormatable, NfcEvents } from 'react-native-nfc-manager';
+import NfcManager, {
+  NfcTech,
+  Ndef,
+  NdefFormatable,
+  NfcEvents,
+} from "react-native-nfc-manager";
 import { date } from "yup";
 import { useRoute } from "@react-navigation/native";
 
 import { Searchbar } from "react-native-paper";
 import { fi } from "date-fns/locale/fi";
 // const route = useRoute();
-const moment = require('moment');
+const moment = require("moment");
 
 const ListTemuanPatrol = ({ navigation }) => {
-
   const route = useRoute();
   //const {tagNo} = route.params;
   const { recordPatrol } = route.params;
-  console.log('haloo',recordPatrol.id );
+  console.log("haloo", recordPatrol.id);
 
-  const [recordPatroliTemuan, setRecordPatroliTemuan] = useState ([]);
+  const [recordPatroliTemuan, setRecordPatroliTemuan] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +56,9 @@ const ListTemuanPatrol = ({ navigation }) => {
   const fetchDataFromAPI = async () => {
     try {
       const apiUrl = process.env.URL;
-      const response = await axios.get(`${apiUrl}/temuanPatrolByIdRecordPatrol/${recordPatrol.id}`);
+      const response = await axios.get(
+        `${apiUrl}/temuanPatrolByIdRecordPatrol/${recordPatrol.id}`
+      );
       console.log(response.data);
       setRecordPatroliTemuan(response.data);
       setIsLoading(false);
@@ -86,7 +91,7 @@ const ListTemuanPatrol = ({ navigation }) => {
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchBar}
-          theme={{ colors: { primary: 'green' } }}
+          theme={{ colors: { primary: "green" } }}
           rippleColor={COLORS.green}
         />
         <View style={styles.loadingContainer}>
@@ -105,7 +110,7 @@ const ListTemuanPatrol = ({ navigation }) => {
       >
         <View style={styles.content}>
           {recordPatroliTemuan
-            .filter(item => item.status === '1')
+            .filter((item) => item.status === "1")
             .reverse()
             .map((item, index) => (
               <View key={index} style={styles.infoBox}>
@@ -126,13 +131,12 @@ const ListTemuanPatrol = ({ navigation }) => {
                   <Text style={styles.infoText}>{item.remarks}</Text>
                 </View>
               </View>
-
             ))}
         </View>
       </ScrollView>
 
       <Modal
-        visible={modalVisible} 
+        visible={modalVisible}
         transparent={true}
         animationType="fade"
         onRequestClose={() => {
@@ -182,8 +186,8 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 16,
     marginBottom: 5,
-    color:COLORS.blue,
-    fontWeight: "bold"
+    color: COLORS.blue,
+    fontWeight: "bold",
   },
   infoTagNo: {
     fontSize: 30,
@@ -216,10 +220,10 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -233,7 +237,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     marginVertical: 10,
-    borderRadius: 5
+    borderRadius: 5,
   },
 });
 

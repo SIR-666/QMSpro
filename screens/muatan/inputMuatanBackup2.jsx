@@ -26,7 +26,6 @@ import axios from "axios";
 import reusable from "../../components/Reusable/reusable.style";
 import Timeline from "react-native-simple-timeline";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 
 const validationSchema = Yup.object().shape({

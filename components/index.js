@@ -19,6 +19,8 @@ import AssetImage from "./Reusable/AssetImage";
 import Counter from "./Reusable/Counter";
 import Payment from "./Reusable/Payment";
 import ReusableUploadImage from "./Reusable/ReusableUploadImage";
+import ReusablePhotoImage from "./Reusable/ReusablePhotoImage";
+import ReusableOfflineUploadImage from "./Reusable/ReusableOfflineUploadImage";
 
 export {
   Payment,
@@ -42,5 +44,6 @@ export {
   SettingTile,
   AssetImage,
   ReusableUploadImage,
-  
+  ReusablePhotoImage,
+  ReusableOfflineUploadImage,
 };

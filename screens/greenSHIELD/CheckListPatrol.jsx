@@ -21,15 +21,18 @@ import {
   WidthSpacer,
   HeightSpacer,
 } from "../../components";
-import * as ImagePicker from "expo-image-picker";
 import reusable from "../../components/Reusable/reusable.style";
 import { SafeAreaView } from "react-native-safe-area-context";
-import NfcManager, { NfcTech, Ndef, NdefFormatable, NfcEvents } from 'react-native-nfc-manager';
+import NfcManager, {
+  NfcTech,
+  Ndef,
+  NdefFormatable,
+  NfcEvents,
+} from "react-native-nfc-manager";
 import { date } from "yup";
 import { useRoute } from "@react-navigation/native";
 // const route = useRoute();
-const moment = require('moment');
-
+const moment = require("moment");
 
 const ChecklistScreen = ({ navigation }) => {
   const [areas, setAreas] = useState([]);
@@ -46,18 +49,10 @@ const ChecklistScreen = ({ navigation }) => {
   const [selectedDataTemuan, setSelectedDataTemuan] = useState(null);
   const [sesi, setSesi] = useState("");
 
-
-
-
   const [currentTime, setCurrentTime] = useState(new Date());
   const [shift, setShift] = useState(null);
 
   const [dataCount, setDataCount] = useState(0);
-
-
-
-
-  
 
   // menyimpan data temuan
   const [dataTemuan, setDataTemuan] = useState([]);
@@ -67,15 +62,13 @@ const ChecklistScreen = ({ navigation }) => {
   const route = useRoute();
   const { idProfile } = route.params;
 
-
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const urlApi = process.env.URL;
         const response = await fetch(`${urlApi}/areaPatrol`);
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error("Network response was not ok");
         }
         const data = await response.json();
         setAreas(data);
@@ -88,75 +81,67 @@ const ChecklistScreen = ({ navigation }) => {
           setDuration(Math.round((new Date() - startTime) / 60000));
         }, 15000);
 
-        console.log('startTime',startTime);
+        console.log("startTime", startTime);
 
         return () => clearInterval(interval);
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
       }
     };
     fetchData();
   }, []);
 
+  //CURRENT TIME
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     setCurrentTime(new Date());
+  //   }, 1000); // Interval setiap detik
+  //   //
+  //   setShift(determineShift(currentTime));
+  //   console.log(shift);
+  //   return () => clearInterval(intervalId);
+  // }, [currentTime]);
 
+  useEffect(() => {
+    const fetchData = async (currentShift) => {
+      const currentDate = moment().format("YYYY-MM-DD");
+      try {
+        const urlApi = process.env.URL;
+        const response = await fetch(`${urlApi}/recordPatrolByDate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date: currentDate,
+            shift: currentShift,
+          }),
+        });
 
-    //CURRENT TIME
-    // useEffect(() => {
-    //   const intervalId = setInterval(() => {
-    //     setCurrentTime(new Date());
-    //   }, 1000); // Interval setiap detik
-    //   //
-    //   setShift(determineShift(currentTime));
-    //   console.log(shift);
-    //   return () => clearInterval(intervalId); 
-    // }, [currentTime]);
-
-
-    useEffect(() => {
-      const fetchData = async (currentShift) => {
-        const currentDate = moment().format('YYYY-MM-DD');
-        try {
-          const urlApi = process.env.URL;
-          const response = await fetch(`${urlApi}/recordPatrolByDate`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              date: currentDate,
-              shift: currentShift
-            })
-          });
-    
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-    
-          const result = await response.json();
-          // Assume the API response returns an array of data
-          console.log("Data count:", result.length);
-          setDataCount(result.length);
-        } catch (error) {
-          console.error("Error fetching data:", error);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
-      };
-    
-      const intervalId = setInterval(async () => {
-        const currentShift = determineShift(new Date());
-        if (currentShift !== shift) {
-          console.log("Current Shift:", currentShift);
-          await fetchData(currentShift);  // Properly await the fetchData call
-          setShift(currentShift);
-        }
-      }, 1000);
-    
-      return () => clearInterval(intervalId);
-    }, [shift]);
-    
-    
 
+        const result = await response.json();
+        // Assume the API response returns an array of data
+        console.log("Data count:", result.length);
+        setDataCount(result.length);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
 
+    const intervalId = setInterval(async () => {
+      const currentShift = determineShift(new Date());
+      if (currentShift !== shift) {
+        console.log("Current Shift:", currentShift);
+        await fetchData(currentShift); // Properly await the fetchData call
+        setShift(currentShift);
+      }
+    }, 1000);
 
+    return () => clearInterval(intervalId);
+  }, [shift]);
 
   async function readNdef() {
     try {
@@ -164,7 +149,9 @@ const ChecklistScreen = ({ navigation }) => {
       const tag = await NfcManager.getTag();
       if (tag) {
         const scannedNfcId = tag.id;
-        const areaWithScannedNfc = areas.find(area => area.nfc_address === scannedNfcId);
+        const areaWithScannedNfc = areas.find(
+          (area) => area.nfc_address === scannedNfcId
+        );
         if (areaWithScannedNfc) {
           setSelectedArea(areaWithScannedNfc);
           setModalVisible(true);
@@ -190,7 +177,7 @@ const ChecklistScreen = ({ navigation }) => {
     initializeNFC();
 
     const intervalId = setInterval(() => {
-      setResetNfc(prev => prev + 1);
+      setResetNfc((prev) => prev + 1);
     }, 1000); // Check every second
 
     return () => {
@@ -206,8 +193,10 @@ const ChecklistScreen = ({ navigation }) => {
 
   const handleTemuan = (status) => {
     // Filter data temuan yang tidak sesuai dengan ID yang akan dihapus
-    const updatedDataTemuan = dataTemuan.filter((item) => item.id !== selectedArea.id);
-  
+    const updatedDataTemuan = dataTemuan.filter(
+      (item) => item.id !== selectedArea.id
+    );
+
     const updatedAreas = areas.map((area) =>
       area.id === selectedArea.id
         ? {
@@ -217,54 +206,53 @@ const ChecklistScreen = ({ navigation }) => {
           }
         : area
     );
-  
+
     setAreas(updatedAreas);
     setModalVisible(false);
-  
+
     if (status === "Ada Temuan") {
       setAdaTemuan(true);
     }
 
-  const updatedDataTemuanAsDraft = [...dataTemuanAsDraft];
+    const updatedDataTemuanAsDraft = [...dataTemuanAsDraft];
 
-  //UNTUK MENGUBAH DATA TEMUAN DARI ADA MENJADI KOSONG
-  const updatedDataTemuanAman = [...dataTemuan];
-  // Untuk menghapus data berdasarkan ID
-  updatedDataTemuanAman.filter(item => item.id !== selectedArea.id);
+    //UNTUK MENGUBAH DATA TEMUAN DARI ADA MENJADI KOSONG
+    const updatedDataTemuanAman = [...dataTemuan];
+    // Untuk menghapus data berdasarkan ID
+    updatedDataTemuanAman.filter((item) => item.id !== selectedArea.id);
 
+    const existingIndex = updatedDataTemuanAsDraft.findIndex(
+      (item) => item.id === selectedArea.id
+    );
 
-  const existingIndex = updatedDataTemuanAsDraft.findIndex(item => item.id === selectedArea.id);
-
-  if (existingIndex !== -1) {
-    // Jika ada, replace data yang ada dengan data baru
-    updatedDataTemuanAsDraft[existingIndex] = {
-      id: selectedArea.id,
-      gambar: "",
-      remarks: "aman"
-    };
-  } else {
-    // Jika tidak ada, tambahkan data baru
-    updatedDataTemuanAsDraft.push({
-      id: selectedArea.id,
-      gambar: "",
-      remarks: "aman"
-    });
-  }
+    if (existingIndex !== -1) {
+      // Jika ada, replace data yang ada dengan data baru
+      updatedDataTemuanAsDraft[existingIndex] = {
+        id: selectedArea.id,
+        gambar: "",
+        remarks: "aman",
+      };
+    } else {
+      // Jika tidak ada, tambahkan data baru
+      updatedDataTemuanAsDraft.push({
+        id: selectedArea.id,
+        gambar: "",
+        remarks: "aman",
+      });
+    }
     const nextArea = updatedAreas.find((area) => !area.status);
     if (nextArea) setCriticalPoints(nextArea.criticalPoints);
-  
+
     // Set state dataTemuan dengan nilai updatedDataTemuan yang sudah difilter
     setDataTemuanAsDraft(updatedDataTemuanAsDraft);
     setDataTemuan(updatedDataTemuan);
     //setDataTemuan(updatedDataTemuan);
   };
-  
-
 
   //handle for show dataTemuan
   const handleShowDataTemuan = (item) => {
     const areaTemuan = dataTemuan.find((data) => data.id === item.id);
-    if(areaTemuan){
+    if (areaTemuan) {
       setSelectedDataTemuan(areaTemuan);
       setModalForDataTemuan(true);
     }
@@ -274,8 +262,8 @@ const ChecklistScreen = ({ navigation }) => {
 
   //HANDLE  SESI
   const handleInputSesi = (selectionOption) => {
-    console.log(selectionOption)
-    setSesi(selectionOption)
+    console.log(selectionOption);
+    setSesi(selectionOption);
   };
 
   const [optionsSesi, setOptionsSesi] = useState([
@@ -296,8 +284,7 @@ const ChecklistScreen = ({ navigation }) => {
       ]);
     }
   }, [dataCount]);
-  
-  
+
   // Fungsi handleSave
   const handleSave = () => {
     const updatedAreas = areas.map((area) =>
@@ -310,68 +297,69 @@ const ChecklistScreen = ({ navigation }) => {
         : area
     );
 
-  // Buat salinan dataTemuan yang telah ada
-  const updatedDataTemuan = [...dataTemuan];
-  const updatedDataTemuanAsDraft = [...dataTemuanAsDraft];
-
-  // Periksa apakah data dengan id yang sama sudah ada di updatedDataTemuan
-  const existingIndex = updatedDataTemuan.findIndex(item => item.id === selectedArea.id);
-  if (existingIndex !== -1) {
-    // Jika ada, replace data yang ada dengan data baru
-    updatedDataTemuan[existingIndex] = {
-      id: selectedArea.id,
-      gambar: temuan.gambar,
-      remarks: temuan.remarks
-    };
-  } else {
-    // Jika tidak ada, tambahkan data baru
-    updatedDataTemuan.push({
-      id: selectedArea.id,
-      gambar: temuan.gambar,
-      remarks: temuan.remarks
-    });
-  }
+    // Buat salinan dataTemuan yang telah ada
+    const updatedDataTemuan = [...dataTemuan];
+    const updatedDataTemuanAsDraft = [...dataTemuanAsDraft];
 
     // Periksa apakah data dengan id yang sama sudah ada di updatedDataTemuan
-    const existingIndexDraft = updatedDataTemuanAsDraft.findIndex(item => item.id === selectedArea.id);
+    const existingIndex = updatedDataTemuan.findIndex(
+      (item) => item.id === selectedArea.id
+    );
     if (existingIndex !== -1) {
       // Jika ada, replace data yang ada dengan data baru
       updatedDataTemuan[existingIndex] = {
         id: selectedArea.id,
         gambar: temuan.gambar,
-        remarks: temuan.remarks
+        remarks: temuan.remarks,
       };
     } else {
       // Jika tidak ada, tambahkan data baru
       updatedDataTemuan.push({
         id: selectedArea.id,
         gambar: temuan.gambar,
-        remarks: temuan.remarks
+        remarks: temuan.remarks,
       });
     }
 
-  // Set state dataTemuan dengan nilai updatedDataTemuan
-  setDataTemuan(updatedDataTemuan);
-  setDataTemuanAsDraft(updatedDataTemuan);
+    // Periksa apakah data dengan id yang sama sudah ada di updatedDataTemuan
+    const existingIndexDraft = updatedDataTemuanAsDraft.findIndex(
+      (item) => item.id === selectedArea.id
+    );
+    if (existingIndex !== -1) {
+      // Jika ada, replace data yang ada dengan data baru
+      updatedDataTemuan[existingIndex] = {
+        id: selectedArea.id,
+        gambar: temuan.gambar,
+        remarks: temuan.remarks,
+      };
+    } else {
+      // Jika tidak ada, tambahkan data baru
+      updatedDataTemuan.push({
+        id: selectedArea.id,
+        gambar: temuan.gambar,
+        remarks: temuan.remarks,
+      });
+    }
 
-  setAreas(updatedAreas);
-  setAdaTemuan(false);
+    // Set state dataTemuan dengan nilai updatedDataTemuan
+    setDataTemuan(updatedDataTemuan);
+    setDataTemuanAsDraft(updatedDataTemuan);
 
-  const nextArea = updatedAreas.find((area) => !area.status);
-  if (nextArea) setCriticalPoints(nextArea.criticalPoints);
+    setAreas(updatedAreas);
+    setAdaTemuan(false);
 
-  // Set temuan kembali ke nilai awal
-  setTemuan({ gambar: null, remarks: "" });
+    const nextArea = updatedAreas.find((area) => !area.status);
+    if (nextArea) setCriticalPoints(nextArea.criticalPoints);
+
+    // Set temuan kembali ke nilai awal
+    setTemuan({ gambar: null, remarks: "" });
   };
-
-
 
   useEffect(() => {
     console.log("Data Temuan Updated:", dataTemuan);
     console.log("Data Temuan Updated As Draft:", dataTemuanAsDraft);
     console.log(dataTemuan.length);
   }, [dataTemuanAsDraft]);
-
 
   const determineShift = (currentTime) => {
     const hour = currentTime.getHours();
@@ -392,8 +380,10 @@ const ChecklistScreen = ({ navigation }) => {
       const status = areas.every((area) => area.status) ? "selesai" : "draft";
 
       // Format startTime dan endTime menggunakan moment.js
-      const formattedStartTime = moment(startTime).format('YYYY-MM-DDTHH:mm:ss');
-      const formattedEndTime = moment(endTime).format('YYYY-MM-DDTHH:mm:ss');
+      const formattedStartTime = moment(startTime).format(
+        "YYYY-MM-DDTHH:mm:ss"
+      );
+      const formattedEndTime = moment(endTime).format("YYYY-MM-DDTHH:mm:ss");
 
       // Tentukan shift berdasarkan waktu saat ini
       const currentShift = determineShift(endTime);
@@ -402,7 +392,7 @@ const ChecklistScreen = ({ navigation }) => {
       let statuss = dataTemuan.length === 0 ? 0 : 1;
 
       // Memeriksa apakah semua area memiliki status 'checked'
-      if (areas.every(area => area.status != 'issue' || 'checked')) {
+      if (areas.every((area) => area.status != "issue" || "checked")) {
         statuss = 2;
       }
 
@@ -414,24 +404,27 @@ const ChecklistScreen = ({ navigation }) => {
         kmPatroli: 0,
         shift: currentShift,
         jenis: sesi,
-        status: statuss
+        status: statuss,
       };
 
       // Lakukan POST ke recordPatrol
-      const recordPatrolResponse = await fetch(`${process.env.URL}/recordPatrol`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(recordPatrolData)
-      });
+      const recordPatrolResponse = await fetch(
+        `${process.env.URL}/recordPatrol`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(recordPatrolData),
+        }
+      );
 
       if (!recordPatrolResponse.ok) {
-        throw new Error('Failed to insert recordPatrol');
+        throw new Error("Failed to insert recordPatrol");
       }
 
       const recordPatrolResult = await recordPatrolResponse.json();
-      console.log('recordPatrolResult =', recordPatrolResult);
+      console.log("recordPatrolResult =", recordPatrolResult);
       const recordPatrolId = recordPatrolResult.insertId;
 
       // Data dummy untuk temuanPatroli
@@ -441,39 +434,39 @@ const ChecklistScreen = ({ navigation }) => {
         image: temuan.gambar,
         description: "",
         remarks: temuan.remarks,
-        status: statuss.toString() // Menggunakan statuss() dan mengonversi ke string
+        status: statuss.toString(), // Menggunakan statuss() dan mengonversi ke string
       }));
-      
 
       // Lakukan POST ke temuanPatrol untuk setiap temuan
       for (const data of temuanPatroliData) {
-        const temuanPatrolResponse = await fetch(`${process.env.URL}/temuanPatrol`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
+        const temuanPatrolResponse = await fetch(
+          `${process.env.URL}/temuanPatrol`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          }
+        );
 
         if (!temuanPatrolResponse.ok) {
-          throw new Error('Failed to insert temuanPatrol');
+          throw new Error("Failed to insert temuanPatrol");
         }
       }
-      console.log('Data successfully inserted');
+      console.log("Data successfully inserted");
       navigation.replace("Bottom");
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
-
-
   const handleImagePathChange = (path) => {
-    setTemuan(prevTemuan => ({ ...prevTemuan, gambar: path }));
+    setTemuan((prevTemuan) => ({ ...prevTemuan, gambar: path }));
   };
 
   const handleRemarksChange = (remarks) => {
-    setTemuan(prevTemuan => ({ ...prevTemuan, remarks }));
+    setTemuan((prevTemuan) => ({ ...prevTemuan, remarks }));
   };
 
   const renderItem = ({ item }) => {
@@ -491,19 +484,16 @@ const ChecklistScreen = ({ navigation }) => {
                 : styles.normal
             }
           >
-          {item.name}
-          </Text> 
-          {item.status === "issue" && <Text style={styles.exclamation}>!!!</Text>}
+            {item.name}
+          </Text>
+          {item.status === "issue" && (
+            <Text style={styles.exclamation}>!!!</Text>
+          )}
           {item.status === "checked" && <Text style={styles.checkmark}>✔</Text>}
-          
         </View>
-      </TouchableOpacity>  
-      
+      </TouchableOpacity>
     );
   };
-  
-  
-
 
   const handlePressGoBack = () => {
     navigation.replace("Bottom");
@@ -529,8 +519,7 @@ const ChecklistScreen = ({ navigation }) => {
               <Text style={styles.title}>Checklist Patroli</Text>
             </View>
 
-                       
-            <HeightSpacer height={16} />           
+            <HeightSpacer height={16} />
             <View style={styles.wrapper}>
               <Text style={styles.label}>Sesi</Text>
               <View>
@@ -538,21 +527,21 @@ const ChecklistScreen = ({ navigation }) => {
                   <ReusableDropdown
                     selectedValue={sesi}
                     onValueChange={handleInputSesi}
-                    itemOptions={optionsSesi.map(option => option.value)}
+                    itemOptions={optionsSesi.map((option) => option.value)}
                   />
                 </View>
               </View>
             </View>
 
             {/* <Text>Waktu sekarang: {currentTime}</Text> */}
-
           </>
         }
         ListFooterComponent={
           <>
             <View style={styles.criticalPoints}>
               <Text style={styles.criticalHeader}>
-                Critical points {selectedArea ? `area ${selectedArea.name}` : ""}
+                Critical points{" "}
+                {selectedArea ? `area ${selectedArea.name}` : ""}
               </Text>
               <Text>{criticalPoints}</Text>
             </View>
@@ -571,10 +560,9 @@ const ChecklistScreen = ({ navigation }) => {
                 paddingHorizontal: 3,
               }}
             >
-
               <ReusableBtn
                 btnText={
-                  areas.every((area) => area.status != 'active')
+                  areas.every((area) => area.status != "active")
                     ? "Submit hasil Patroli"
                     : "Simpan sebagai Draft"
                 }
@@ -607,10 +595,10 @@ const ChecklistScreen = ({ navigation }) => {
                   <View style={styles.rowContainer}>
                     <ReusableBtn
                       onPress={() => handleTemuan("Aman")}
-                      btnText={'Aman'}
+                      btnText={"Aman"}
                       textColor={COLORS.black}
                       width={"50%"}
-                      backgroundColor={'#95f0ce'}
+                      backgroundColor={"#95f0ce"}
                       borderWidth={1}
                       borderColor={COLORS.black}
                     />
@@ -620,10 +608,10 @@ const ChecklistScreen = ({ navigation }) => {
                         setAdaTemuan(true);
                         setModalVisible(false);
                       }}
-                      btnText={'Ada Temuan'}
+                      btnText={"Ada Temuan"}
                       textColor={COLORS.black}
                       width={"50%"}
-                      backgroundColor={'#F14B3D'}
+                      backgroundColor={"#F14B3D"}
                       borderWidth={1}
                       borderColor={COLORS.black}
                     />
@@ -657,18 +645,18 @@ const ChecklistScreen = ({ navigation }) => {
                   <HeightSpacer height={10} />
 
                   <View style={styles.wrapper}>
-                        <View>
-                          <View style={styles.inputWrapper(COLORS.lightGreen)}>
-                          <TextInput
-                            style={styles.textInput}
-                            value={temuan.remarks}
-                            onChangeText={handleRemarksChange}
-                            placeholder="Description.................................................."
-                            multiline
-                            numberOfLines={1}
-                          />
-                          </View>
+                    <View>
+                      <View style={styles.inputWrapper(COLORS.lightGreen)}>
+                        <TextInput
+                          style={styles.textInput}
+                          value={temuan.remarks}
+                          onChangeText={handleRemarksChange}
+                          placeholder="Description.................................................."
+                          multiline
+                          numberOfLines={1}
+                        />
                       </View>
+                    </View>
                   </View>
 
                   <HeightSpacer height={10} />
@@ -676,10 +664,10 @@ const ChecklistScreen = ({ navigation }) => {
                   <View style={styles.rowContainer}>
                     <ReusableBtn
                       onPress={handleSave}
-                      btnText={'Save'}
+                      btnText={"Save"}
                       textColor={COLORS.black}
                       width={"40%"}
-                      backgroundColor={'#95f0ce'}
+                      backgroundColor={"#95f0ce"}
                       borderWidth={1}
                       borderColor={COLORS.black}
                     />
@@ -687,7 +675,6 @@ const ChecklistScreen = ({ navigation }) => {
                 </View>
               </TouchableOpacity>
             </Modal>
-
 
             <Modal
               visible={modalForDataTemuan}
@@ -705,14 +692,18 @@ const ChecklistScreen = ({ navigation }) => {
                 <View style={styles.modalView}>
                   {selectedDataTemuan && (
                     <>
-                      {selectedDataTemuan.gambar && <Image source={{ uri: selectedDataTemuan.gambar }} style={styles.image} />}
+                      {selectedDataTemuan.gambar && (
+                        <Image
+                          source={{ uri: selectedDataTemuan.gambar }}
+                          style={styles.image}
+                        />
+                      )}
                       <Text>{selectedDataTemuan.remarks}</Text>
                     </>
                   )}
                 </View>
               </TouchableOpacity>
             </Modal>
-
           </>
         }
       />
@@ -794,7 +785,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
-    height:10
+    height: 10,
   },
   modalContent: {
     backgroundColor: "white",
@@ -805,7 +796,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     marginVertical: 10,
-    borderRadius: 5
+    borderRadius: 5,
   },
   input: {
     borderBottomWidth: 1,
@@ -814,11 +805,11 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
     //alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -827,17 +818,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     alignItems: "center",
-        // flexDirection:"row"
+    // flexDirection:"row"
   },
   rowContainer: {
     flexDirection: "row",
   },
   centeredText: {
-    textAlign: 'center',
-    marginBottom:20,
-    fontSize:20,
+    textAlign: "center",
+    marginBottom: 20,
+    fontSize: 20,
     fontWeight: "bold",
-    
   },
   wrapper: {
     marginBottom: 25,
@@ -859,7 +849,6 @@ const styles = StyleSheet.create({
     marginStart: 5,
     textAlign: "left",
   },
-  
 });
 
 export default ChecklistScreen;
