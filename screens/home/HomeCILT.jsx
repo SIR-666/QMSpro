@@ -1,33 +1,23 @@
 // import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import React from "react";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Dimensions,
+  FlatList,
+  Image,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  Image,
-  Alert,
-  FlatList,
-  Dimensions,
+  View,
 } from "react-native";
 // import { Image } from "expo-image";
-import reusable from "../../components/Reusable/reusable.style";
-import {
-  AssetImage,
-  ReusableText,
-  HeightSpacer,
-  Recommendations,
-} from "../../components";
-import Places from "../../components/Home/Places";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { HeightSpacer } from "../../components";
 // import styles from "./home.style";
-import BestHotels from "../../components/Home/BestHotels";
-import checkUser from "../../hook/checkUser";
-import { Color, FontFamily, FontSize, Border } from "../../GlobalStyles";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { Border, Color, FontSize } from "../../GlobalStyles";
+import checkUser from "../../hook/checkUser";
 
 const Home = ({ navigation }) => {
   const { userLogin, userData, isLoading, time } = checkUser();
@@ -70,6 +60,12 @@ const Home = ({ navigation }) => {
       title: "LIST CILT",
       image: require("../../assets/handover.png"),
       link: "ListCILT",
+    },
+    {
+      id: 5,
+      title: "LIST SAVE AS DRAFT",
+      image: require("../../assets/listHO.png"),
+      link: "ListCILTDraft",
     },
     // {
     //   id: 5,

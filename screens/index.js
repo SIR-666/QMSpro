@@ -1,94 +1,100 @@
-import Onboarding from "./onboarding/Onboarding";
+import Registration from "./authentication/Registration";
+import Signin from "./authentication/Signin";
+import Failed from "./bookings/Failed";
+import Successful from "./bookings/Successful";
+import Chat from "./chat/Chat";
+import AddCilt from "./cilt/AddCilt";
+import DetailLaporanCILT from "./cilt/DetailLaporanCILT";
+import DetailLaporanCILTGIGR from "./cilt/DetailLaporanCILTGIGR";
+import DetailLaporanShiftlyCILT from "./cilt/DetailLaporanShiftlyCILT";
+import EditCilt from "./cilt/EditCilt";
+import EditShiftHandOver from "./cilt/EditShiftHandOver";
+import ListCILT from "./cilt/ListCILT";
+import ListCILTDraft from "./cilt/ListCILTDraft";
+import ListShiftHandOver from "./cilt/ListShiftHandOver";
+import ShiftHandOver from "./cilt/ShiftHandOver";
+import CountryDetails from "./details/CountryDetails";
+import HotelDetails from "./details/HotelDetails";
+import HotelList from "./details/HotelList";
+import PlaceDetails from "./details/PlaceDetails";
+import PopularDestinations from "./details/PopularDesinations";
+import PopularHotels from "./details/PopularHotels";
+import Recommended from "./details/Recommended";
+import SelectRoom from "./details/SelectRoom";
+import SelectedRoom from "./details/SelectedRoom";
 import Home from "./home/Home";
 import HomeCILT from "./home/HomeCILT";
 import HomeHO from "./home/HomeHO";
-import inputMuatan from "./muatan/inputMuatan";
 import Location from "./location/Location";
-import Chat from "./chat/Chat";
+import inputMuatan from "./muatan/inputMuatan";
+import Onboarding from "./onboarding/Onboarding";
+import Payments from "./profile/Payments";
 import Profile from "./profile/Profile";
-import Search from "./search/Search";
-import CountryDetails from "./details/CountryDetails";
-import Recommended from "./details/Recommended";
-import PlaceDetails from "./details/PlaceDetails";
-import HotelDetails from "./details/HotelDetails";
-import HotelList from "./details/HotelList";
+import AllReviews from "./reviews/AllReviews";
+import AddReviews from "./reviews/add/AddReviews";
 import HotelSearch from "./search/HotelSearch";
-import SelectRoom from "./details/SelectRoom";
+import Search from "./search/Search";
+import PaymentMethod from "./setttings/PaymentMethod";
+import Settings from "./setttings/Settings";
 import TopBookings from "./top/TopBookings";
 import TopInfo from "./top/TopInfo";
 import TopTrips from "./top/TopTrips";
-import Payments from "./profile/Payments";
-import Settings from "./setttings/Settings";
-import Successful from "./bookings/Successful";
-import Failed from "./bookings/Failed";
-import Registration from "./authentication/Registration";
-import Signin from "./authentication/Signin";
-import SelectedRoom from "./details/SelectedRoom";
-import AllReviews from "./reviews/AllReviews";
-import AddReviews from "./reviews/add/AddReviews";
-import PopularDestinations from "./details/PopularDesinations";
-import PaymentMethod from "./setttings/PaymentMethod";
-import PopularHotels from "./details/PopularHotels";
-import AddCilt from "./cilt/AddCilt";
-import ShiftHandOver from "./cilt/ShiftHandOver";
-import ListShiftHandOver from "./cilt/ListShiftHandOver";
-import ListCILT from "./cilt/ListCILT";
-import DetailLaporanShiftlyCILT from "./cilt/DetailLaporanShiftlyCILT";
-import DetailLaporanCILT from "./cilt/DetailLaporanCILT";
-import EditShiftHandOver from "./cilt/EditShiftHandOver";
 // import EditGreentag from "./greentag/editGreentag";
 // import TagScanner from "./greentag/tagScanner";
 import ChecklistScreen from "./greenSHIELD/CheckListPatrol";
-import ListRecordPatrol from "./greenSHIELD/ListRecordPatrol";
-import ListTemuanPatrol from "./greenSHIELD/ListTemuanPatrol";
-import ListRecordPatrolAsDarft from "./greenSHIELD/ListRecordPatrolAsDarft";
 import EditchecklistPatrol from "./greenSHIELD/EditchecklistPatrol";
+import ListRecordPatrol from "./greenSHIELD/ListRecordPatrol";
+import ListRecordPatrolAsDarft from "./greenSHIELD/ListRecordPatrolAsDarft";
+import ListTemuanPatrol from "./greenSHIELD/ListTemuanPatrol";
 //import listGreentag from "./listgreentag/listGreentag";
 //import AddReviews from "./listgreentag/AddReviews";
 //import ListGreentag from "./listgreentag/listGreentag";
 
 export {
-  inputMuatan,
-  PopularHotels,
-  PaymentMethod,
-  Onboarding,
-  PopularDestinations,
+  AddCilt,
   AddReviews,
   AllReviews,
-  Registration,
-  SelectedRoom,
-  Signin,
+  Chat,
+  ChecklistScreen,
+  CountryDetails,
+  DetailLaporanCILT,
+  DetailLaporanCILTGIGR,
+  DetailLaporanShiftlyCILT,
+  EditchecklistPatrol,
+  EditCilt,
+  EditShiftHandOver,
   Failed,
-  Successful,
-  SelectRoom,
   Home,
   HomeCILT,
   HomeHO,
-  Location,
-  Chat,
-  Profile,
-  Search,
-  CountryDetails,
-  Recommended,
-  PlaceDetails,
   HotelDetails,
   HotelList,
   HotelSearch,
+  inputMuatan,
+  ListCILT,
+  ListCILTDraft,
+  ListRecordPatrol,
+  ListRecordPatrolAsDarft,
+  ListShiftHandOver,
+  ListTemuanPatrol,
+  Location,
+  Onboarding,
+  PaymentMethod,
+  Payments,
+  PlaceDetails,
+  PopularDestinations,
+  PopularHotels,
+  Profile,
+  Recommended,
+  Registration,
+  Search,
+  SelectedRoom,
+  SelectRoom,
+  Settings,
+  ShiftHandOver,
+  Signin,
+  Successful,
   TopBookings,
   TopInfo,
   TopTrips,
-  Payments,
-  Settings,
-  ChecklistScreen,
-  ListRecordPatrol,
-  ListTemuanPatrol,
-  ListRecordPatrolAsDarft,
-  EditchecklistPatrol,
-  AddCilt,
-  ShiftHandOver,
-  ListShiftHandOver,
-  ListCILT,
-  DetailLaporanShiftlyCILT,
-  DetailLaporanCILT,
-  EditShiftHandOver,
 };

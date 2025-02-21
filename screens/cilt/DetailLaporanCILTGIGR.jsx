@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { COLORS } from "../../constants/theme";
 
-const DetailLaporanShiftly = ({ route, navigation }) => {
+const DetailLaporanCILTGIGR = ({ route, navigation }) => {
   const { item } = route.params;
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -119,82 +119,53 @@ const DetailLaporanShiftly = ({ route, navigation }) => {
             <View style={styles.tableHead}>
               {/* Header Caption */}
               <View style={{ width: "10%" }}>
-                <Text style={styles.tableCaption}>No</Text>
-              </View>
-              <View style={{ width: "25%" }}>
-                <Text style={styles.tableCaption}>Activity</Text>
-              </View>
-              <View style={{ width: "15%" }}>
-                <Text style={styles.tableCaption}>Standard</Text>
-              </View>
-              <View style={{ width: "20%" }}>
-                <Text style={styles.tableCaption}>Periode</Text>
+                <Text style={styles.tableCaption}>NO</Text>
               </View>
               <View style={{ width: "10%" }}>
-                <Text style={styles.tableCaption}>Result</Text>
+                <Text style={styles.tableCaption}>NO PALET</Text>
+              </View>
+              <View style={{ width: "30%" }}>
+                <Text style={styles.tableCaption}>NO CARTON</Text>
               </View>
               <View style={{ width: "20%" }}>
-                <Text style={styles.tableCaption}>Picture</Text>
+                <Text style={styles.tableCaption}>JUMLAH CARTON</Text>
+              </View>
+              <View style={{ width: "30%" }}>
+                <Text style={styles.tableCaption}>WAKTU</Text>
               </View>
             </View>
 
             {/* Table Body */}
             {inspectionData.map((item, index) => {
-              const resultValue = parseFloat(item.results);
-              const standard1Value = parseFloat(item.standard.split("-")[0]);
-              const standard2Value = parseFloat(item.standard.split("-")[1]);
-
-              const isInStandard =
-                resultValue >= standard1Value && resultValue <= standard2Value;
               return (
                 <View key={index} style={styles.tableBody}>
                   {/* Header Caption */}
                   <View style={{ width: "10%" }}>
-                    {/* <Text style={styles.tableData}>Done</Text> */}
                     <View style={[styles.tableData, styles.centeredContent]}>
-                      <Text style={styles.tableData}>{index + 1}</Text>
+                      <Text style={styles.tableData}>{item.id}</Text>
                     </View>
                   </View>
-                  <View style={{ width: "25%" }}>
-                    <Text style={styles.tableData}>{item.activity}</Text>
+                  <View style={{ width: "10%" }}>
+                    <View style={[styles.tableData, styles.centeredContent]}>
+                      <Text style={[styles.tableData]}>{item.noPalet}</Text>
+                    </View>
                   </View>
-                  <View style={{ width: "15%" }}>
-                    <Text style={styles.tableData}>{item.standard}</Text>
+                  <View style={{ width: "30%" }}>
+                    <View style={[styles.tableData, styles.centeredContent]}>
+                      <Text style={[styles.tableData]}>{item.noCarton}</Text>
+                    </View>
                   </View>
                   <View style={{ width: "20%" }}>
-                    <Text style={styles.tableData}>{item.periode}</Text>
-                  </View>
-                  <View style={{ width: "10%" }}>
-                    {/* <Text style={styles.tableData}>Hasil</Text> */}
                     <View style={[styles.tableData, styles.centeredContent]}>
-                      {/* <TextInput
-                        style={styles.tableData}
-                        value={item.results}
-                        onChangeText={(text) => handleInputChange(text, index)}
-                      /> */}
-
-                      <Text
-                        style={[
-                          styles.tableData,
-                          isInStandard ? styles.green : styles.red,
-                        ]}
-                      >
-                        {item.results}
+                      <Text style={[styles.tableData]}>
+                        {item.jumlahCarton}
                       </Text>
                     </View>
                   </View>
-                  <View style={{ width: "20%" }}>
-                    {item.picture !== null && item.picture !== "" ? (
-                      <TouchableOpacity
-                        onPress={() => handlePress(item.picture)} // Set the image in the modal
-                      >
-                        <Text style={[styles.tableData, styles.linkText]}>
-                          gambar
-                        </Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <Text style={styles.tableData}>N/A</Text>
-                    )}
+                  <View style={{ width: "30%" }}>
+                    <View style={[styles.tableData, styles.centeredContent]}>
+                      <Text style={[styles.tableData]}>{item.waktu}</Text>
+                    </View>
                   </View>
                 </View>
               );
@@ -392,4 +363,4 @@ const styles = StyleSheet.create({
   // },
 });
 
-export default DetailLaporanShiftly;
+export default DetailLaporanCILTGIGR;

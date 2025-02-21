@@ -2,11 +2,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
+import * as ScreenOrientation from "expo-screen-orientation";
 import moment from "moment-timezone";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   ScrollView,
   StyleSheet,
   Switch,
@@ -17,25 +19,20 @@ import {
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ReusableDatetime, ReusableOfflineUploadImage } from "../../components";
+import { ReusableOfflineUploadImage } from "../../components";
+import ReusableDatetime2 from "../../components/Reusable/ReusableDatetime2";
 import { COLORS } from "../../constants/theme";
 
 // Define uploadImageToServer function here
-
 // Image upload function
 // Image upload function with improved error handling
+
 const uploadImageToServer = async (uri) => {
   const apiUrl2 = process.env.URL2;
   const port33 = process.env.PORT_IMAGE_UPLOAD;
   const apiUrl = "http://10.24.0.39:3003/upload"; // Image server URL
   // const filename = localUri.split("/").pop();
   const formData = new FormData();
-
-  // formData.append("file", {
-  //   uri: localUri,
-  //   name: filename,
-  //   type: "image/jpeg", // Adjust if your image type differs
-  // });
 
   formData.append("images", {
     uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
@@ -44,7 +41,7 @@ const uploadImageToServer = async (uri) => {
   });
 
   try {
-    console.log("Uploading image:", uri); // Log the image path being uploaded
+    // console.log("Uploading image:", uri); // Log the image path being uploaded
 
     const response = await fetch(`${apiUrl2}:${port33}/upload`, {
       method: "POST",
@@ -70,7 +67,7 @@ const uploadImageToServer = async (uri) => {
     let serverImageUrl = responseJson.uploadedFiles[0];
 
     // const serverImageUrl = `${apiUrl2}:${port33}/${responseJson.uploadedFiles[0]}`;
-    console.log("Uploaded image URL:", serverImageUrl);
+    // console.log("Uploaded image URL:", serverImageUrl);
     return serverImageUrl; // Return the server URL after upload
   } catch (error) {
     console.error("Image upload failed:", error);
@@ -78,17 +75,35 @@ const uploadImageToServer = async (uri) => {
   }
 };
 
-const CILTinspection = ({ navigation }) => {
-  const [processOrder, setProcessOrder] = useState("#Plant_Line_SKU");
-  const [packageType, setPackageType] = useState("START UP");
-  const [plant, setPlant] = useState("");
-  const [line, setLine] = useState("");
+// Get shift by hour
+const getShiftByHour = (hour) => {
+  const shift1 = ["06", "07", "08", "09", "10", "11", "12", "13"];
+  const shift2 = ["14", "15", "16", "17", "18", "19", "20", "21"];
+  const shift3 = ["22", "23", "00", "01", "02", "03", "04", "05"];
+
+  if (shift1.includes(hour)) return "Shift 1";
+  if (shift2.includes(hour)) return "Shift 2";
+  if (shift3.includes(hour)) return "Shift 3";
+  return "Unknown Shift";
+};
+
+const EditCILTinspection = ({ route, navigation }) => {
+  const { item } = route.params;
+  const [processOrder, setProcessOrder] = useState(item.processOrder || "");
+  const [packageType, setPackageType] = useState(item.packageType || "");
+  const [plant, setPlant] = useState(item.plant || "");
+  const [line, setLine] = useState(item.line || "");
   const [date, setDate] = useState(new Date());
-  const [shift, setShift] = useState("");
-  const [product, setProduct] = useState("");
-  const [machine, setMachine] = useState("");
-  const [batch, setBatch] = useState("2");
-  const [remarks, setRemarks] = useState("Catatan");
+  const [shift, setShift] = useState(
+    getShiftByHour(moment(new Date()).tz("Asia/Jakarta").format("HH"))
+  );
+
+  const [productOptions, setProductOptions] = useState([]);
+  const [product, setProduct] = useState(item.product || "");
+
+  const [machine, setMachine] = useState(item.machine || "");
+  const [batch, setBatch] = useState(item.batch || "2");
+  const [remarks, setRemarks] = useState(item.remarks || "");
   const [agreed, setAgreed] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // State to manage loading animation
@@ -100,12 +115,16 @@ const CILTinspection = ({ navigation }) => {
   const [lineOptions, setLineOptions] = useState([]);
   const [machineOptions, setMachineOptions] = useState([]);
 
-  // const packageOptions = [
-  //   { label: "Start Up", value: "Start Up" },
-  //   { label: "CILT Shiftly", value: "CILT Shiftly" },
-  //   { label: "CIP/COP/SIP", value: "CIP/COP/SIP" },
-  //   { label: "Change Over", value: "Change Over" },
-  // ];
+  useEffect(() => {
+    // Lock the screen orientation to portrait
+    console.log("Item Data", item);
+    const lockOrientation = async () => {
+      await ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT
+      );
+    };
+    lockOrientation();
+  }, []);
 
   const packageOptions = [
     { label: "END CYCLE", value: "END CYCLE" },
@@ -128,26 +147,102 @@ const CILTinspection = ({ navigation }) => {
     { label: "End shift", value: "End shift" },
   ];
 
-  const productOptions = [
-    { label: "ESL", value: "ESL" },
-    { label: "UHT", value: "UHT" },
-    { label: "Whipping Cream", value: "Whipping Cream" },
-  ];
+  // Fetch product options from API
+
+  const fetchProductOptionsX = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get("http://10.0.2.2:8080/getSKUv2/cilt");
+      const options = response.data.map((item) => ({
+        label: item.sku,
+        value: item.sku,
+        type: item.type,
+      }));
+      // setProductOptions(options);
+      //   console.log("data options:", options);
+      //   console.log("line options:", line);
+
+      let filteredOptions = [];
+
+      if (["A", "B", "C", "D"].includes(line)) {
+        // ESL lines
+        filteredOptions = options.filter((option) => option.type === "ESL");
+        console.log("ESL lines");
+      } else if (["E", "F", "G"].includes(line)) {
+        // UHT lines
+        filteredOptions = options.filter((option) => option.type === "UHT");
+        console.log("UHT lines");
+      }
+
+      // console.log("Filtered product options:", filteredOptions);
+
+      setProductOptions(filteredOptions);
+    } catch (error) {
+      console.error("Error fetching product options:", error);
+      Alert.alert("Error", "Failed to fetch product options.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchProductOptionsX();
+  }, []);
+
+  // Fetch product options from API
+  const fetchProductOptions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get("http://10.0.2.2:8080/getSKUv2/cilt");
+      const options = response.data.map((item) => ({
+        label: item.sku,
+        value: item.sku,
+        type: item.type,
+      }));
+
+      // Ambil huruf terakhir dari nama line, contoh: "Line A" -> "A"
+      const lineSuffix = line.split(" ").pop().toUpperCase();
+      console.log("Line Suffix:", lineSuffix);
+
+      let filteredOptions = [];
+
+      if (["A", "B", "C", "D"].includes(lineSuffix)) {
+        // ESL lines
+        filteredOptions = options.filter((option) => option.type === "ESL");
+        // console.log("Filtered ESL products:", filteredOptions);
+      } else if (["E", "F", "G"].includes(lineSuffix)) {
+        // UHT lines
+        filteredOptions = options.filter((option) => option.type === "UHT");
+        // console.log("Filtered UHT products:", filteredOptions);
+      } else {
+        // Other lines
+        filteredOptions = options;
+        // console.log("Filtered other products:", filteredOptions);
+      }
+
+      setProductOptions(filteredOptions);
+    } catch (error) {
+      console.error("Error fetching product options:", error);
+      Alert.alert("Error", "Failed to fetch product options.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // useEffect to refetch products when line changes
+  useEffect(() => {
+    if (line) {
+      fetchProductOptions();
+    }
+  }, [line]);
 
   useEffect(() => {
     fetchAreaData();
     // fetchInspectionData(); // Fetch inspection data from mastercilt API
     fetchInspectionData(packageType); // Pass the updated packageType to fetchInspectionData
     setFormOpenTime(moment().tz("Asia/Jakarta").format()); // Record the time the form is opened
-  }, [packageType]);
+  }, [packageType, machine]);
 
   useEffect(() => {
-    // if (packageType === "Shiftly") {
-    //   setHideDateInput(true); // Hide date input for CILT Shiftly
-    // } else {
-    //   setHideDateInput(false); // Show date input for other types
-    // }
-
     filterOptions();
     updateProcessOrder();
   }, [plant, line, product, packageType, date, shift, machine]);
@@ -156,6 +251,9 @@ const CILTinspection = ({ navigation }) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(Platform.OS === "ios"); // Close the picker on iOS immediately
     setDate(currentDate);
+    setShift(
+      getShiftByHour(moment(currentDate).tz("Asia/Jakarta").format("HH"))
+    );
     updateProcessOrder(); // Update process order based on the new date
   };
 
@@ -173,24 +271,11 @@ const CILTinspection = ({ navigation }) => {
     setInspectionData([]); // Reset inspection data before fetching new data
 
     try {
-      const response = await axios.get("http://10.0.2.2:8080/mastercilt");
+      // Parse the inspection data (string to object)
+      const inspectionData = JSON.parse(item.inspectionData);
 
-      const filteredData = response.data.filter(
-        (item) => item.type === selectedPackageType
-      );
-
-      const formattedData = filteredData.map((item) => ({
-        activity: item.activity,
-        standard: `${item.min} - ${item.max}`,
-        periode: item.frekwensi,
-        picture: item.image === "Y" ? "" : null, // If "Y", allow image upload
-        results: "",
-        done: false,
-        content: item.content,
-      }));
-
-      setInspectionData(formattedData); // Set the new inspection data
-      // console.log("Updated inspectionData:", formattedData); // Debugging log
+      setInspectionData(inspectionData); // Set the new inspection data
+      //   console.log("Updated inspectionData:", inspectionData); // Debugging log
     } catch (error) {
       console.error("Error fetching inspection data:", error);
     } finally {
@@ -209,9 +294,16 @@ const CILTinspection = ({ navigation }) => {
     const filteredMachines = areas
       .filter((area) => area.observedArea === plant && area.line === line)
       .map((area) => area.subGroup)
-      .filter((value, index, self) => self.indexOf(value) === index);
+      .filter(
+        (value, index, self) =>
+          self.indexOf(value) === index &&
+          value !== "Straw Applicator" &&
+          value !== "Cap Applicator"
+      );
 
     setMachineOptions(filteredMachines);
+
+    fetchProductOptions();
   };
 
   const updateProcessOrder = () => {
@@ -223,8 +315,12 @@ const CILTinspection = ({ navigation }) => {
     const formattedShift = shift.replace(/\s+/g, "-");
     const formattedMachine = machine.replace(/\s+/g, "-");
 
+    // setProcessOrder(
+    //   `#${formattedPlant}_${formattedLine}_${formattedProduct}_${formattedDate}_${formattedTime}_${formattedShift}_${formattedMachine}`
+    // );
+
     setProcessOrder(
-      `#${formattedPlant}_${formattedLine}_${formattedProduct}_${formattedDate}_${formattedTime}_${formattedShift}_${formattedMachine}`
+      `#${formattedPlant}_${formattedLine}_${formattedDate}_${formattedShift}_${formattedMachine}`
     );
   };
 
@@ -240,49 +336,51 @@ const CILTinspection = ({ navigation }) => {
     setInspectionData(data);
   };
 
-  const handleInputChange = (text, index) => {
+  const handleInputChangeOLD = (text, index) => {
     let data = [...inspectionData];
     data[index].results = text;
     setInspectionData(data);
   };
 
-  // Submit form and handle image upload
-  const handleSubmit = async () => {
-    const submitTime = moment().tz("Asia/Jakarta").format(); // Record submit time
-    // const submitDate = moment(submitTime).utc().toISOString();
-    // console.log("Submit time:", submitTime);
-    // console.log("Submit date iso:", submitDate);
-    /*
-     {"AbnormalityDescription": "Wri", "AbnormalityType": "Safety",
-    "ExpectedDate": "2024-10-10", "IssuedDate": "2024-10-07",
-      "Line": "Motor", "Machine": "Suspension System", "MaintenanceType": "Autonomous Maintenance",
-      "ObservedArea": "AM PM",
-      "Picture": "http://10.0.2.2:3003/uploads/4ad6c148-7bcc-4656-b23c-703ce61aaf03_20241007_112249_comp.jpeg",
-      "ProposedSolution": "Pro", "TagNo": "2", "TaggerName": "marjhy",
-      "datesystem": "2024-10-07T04:22:25.000Z",
-      "footprint": "marjhy@gmail.com", "info1": "Open", "info2": "marjhy@gmail.com"
-  }
-  */
+  const handleInputChange = (text, index) => {
+    let data = [...inspectionData];
+    data[index].results = text; // Perbarui nilai results
+    data[index].done = !!text; // Jika ada teks yang dimasukkan, atur done menjadi true
+    setInspectionData(data); // Perbarui state inspectionData
+  };
 
-    let order = {}; // Declare the order object to ensure it's always available
+  const handleInputChangeGIGR = (text, index, field) => {
+    const newData = [...inspectionData];
+    newData[index][field] = text;
+    setInspectionDataGIGR(newData);
+  };
+
+  // Submit form and handle image upload
+  const handleSubmit = async (id) => {
+    const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
+
+    let order = {}; // Objek untuk menyimpan data order
 
     try {
-      // First, handle the image upload process
+      // Unggah gambar dan dapatkan URL server
       const updatedInspectionData = await Promise.all(
-        inspectionData.map(async (item) => {
+        inspectionData.map(async (item, index) => {
+          let updatedItem = {
+            ...item,
+            id: index + 1, // Tambahkan ID sesuai index
+          };
+
           if (item.picture && item.picture.startsWith("file://")) {
-            // Only upload if the picture is a local file path
+            // Hanya unggah jika gambar berupa file lokal
             const serverImageUrl = await uploadImageToServer(item.picture);
-            return {
-              ...item,
-              picture: serverImageUrl, // Replace local URI with server URL
-            };
+            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
           }
-          return item; // If no image or already a server URL, return the item as-is
+
+          return updatedItem;
         })
       );
 
-      // Prepare the order object with updated inspectionData
+      // Siapkan objek order
       order = {
         processOrder,
         packageType,
@@ -290,30 +388,107 @@ const CILTinspection = ({ navigation }) => {
         line,
         date: hideDateInput
           ? undefined
-          : // : moment(date).tz("Asia/Jakarta").format(),
-            moment(date).utc().toISOString(),
+          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
         shift,
         product,
         machine,
         batch,
         remarks,
-        inspectionData: updatedInspectionData, // Updated inspectionData with server URLs
-        formOpenTime: moment(formOpenTime).utc().toISOString(),
-        submitTime: moment(submitTime).utc().toISOString(),
+        inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
+        status: 0, // Status untuk simpan adalah 0
+        formOpenTime: moment(formOpenTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+        submitTime: moment(submitTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
       };
 
       console.log("Simpan data order:", order);
 
-      // Send the form data to the server
-      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
-      // const response = await axios.post("http://your-api-url/cilt", order);
-      if (response.status === 201) {
+      // Kirim data ke server
+      const response = await axios.put(
+        `http://10.0.2.2:8080/cilt/${id}`,
+        order
+      );
+
+      if (response.status === 200) {
         Alert.alert("Success", "Data submitted successfully!");
-        await clearOfflineData(); // Clear offline data after successful submission
+        await clearOfflineData(); // Hapus data offline setelah berhasil submit
+        navigation.navigate("HomeCILT");
       }
     } catch (error) {
       console.error("Submit failed, saving offline data:", error);
-      await saveOfflineData(order); // Save offline if failed
+      await saveOfflineData(order); // Simpan data secara offline jika submit gagal
+      Alert.alert(
+        "Offline",
+        "No network connection. Data has been saved locally and will be submitted when you are back online."
+      );
+    }
+  };
+
+  // Save as draft form and handle image upload
+  const handleSaveAsDraftGIGR = async () => {
+    const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
+
+    let order = {}; // Objek untuk menyimpan data order
+
+    try {
+      // Unggah gambar dan dapatkan URL server
+      const updatedInspectionData = await Promise.all(
+        inspectionData.map(async (item, index) => {
+          let updatedItem = {
+            ...item,
+            id: index + 1, // Tambahkan ID sesuai index
+          };
+
+          if (item.picture && item.picture.startsWith("file://")) {
+            // Hanya unggah jika gambar berupa file lokal
+            const serverImageUrl = await uploadImageToServer(item.picture);
+            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
+          }
+
+          return updatedItem;
+        })
+      );
+
+      // Siapkan objek order
+      order = {
+        processOrder,
+        packageType,
+        plant,
+        line,
+        date: hideDateInput
+          ? undefined
+          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
+        shift,
+        product,
+        machine,
+        batch,
+        remarks,
+        inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
+        status: 1, // Status untuk draft adalah 1
+        formOpenTime: moment(formOpenTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+        submitTime: moment(submitTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+      };
+
+      console.log("Simpan data order:", order);
+
+      // Kirim data ke server
+      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
+
+      if (response.status === 201) {
+        Alert.alert("Success", "Data submitted successfully!");
+        await clearOfflineData(); // Hapus data offline setelah berhasil submit
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Submit failed, saving offline data:", error);
+      await saveOfflineData(order); // Simpan data secara offline jika submit gagal
       Alert.alert(
         "Offline",
         "No network connection. Data has been saved locally and will be submitted when you are back online."
@@ -324,7 +499,7 @@ const CILTinspection = ({ navigation }) => {
   // Save offline data when API submission fails
   const saveOfflineData = async (order) => {
     try {
-      console.log("Saving offline data:", order);
+      //   console.log("Saving offline data:", order);
       let offlineData = await AsyncStorage.getItem("offlineData");
       offlineData = offlineData ? JSON.parse(offlineData) : [];
       offlineData.push(order);
@@ -367,19 +542,15 @@ const CILTinspection = ({ navigation }) => {
         ) : (
           <>
             <View style={styles.row}>
+              {/* Select Date and Select Time */}
               <View style={styles.halfInputGroup}>
                 <Text style={styles.label}>Date *</Text>
                 <View style={styles.dropdownContainer}>
-                  <MaterialCommunityIcons
-                    name="calendar-range"
-                    size={24}
-                    color={COLORS.lightBlue}
-                  />
-                  <ReusableDatetime
+                  <ReusableDatetime2
                     date={date}
-                    showDatePicker={showDatePicker}
-                    setShowDatePicker={setShowDatePicker}
-                    onDateChange={onDateChange}
+                    setDate={setDate}
+                    setShift={setShift}
+                    getShiftByHour={getShiftByHour}
                   />
                 </View>
               </View>
@@ -426,6 +597,7 @@ const CILTinspection = ({ navigation }) => {
                       setPlant(itemValue);
                       filterOptions();
                     }}
+                    enabled={false}
                   >
                     <Picker.Item label="Select option" value="" />
                     {[...new Set(areas.map((area) => area.observedArea))].map(
@@ -456,8 +628,9 @@ const CILTinspection = ({ navigation }) => {
                       setLine(itemValue);
                       filterOptions();
                     }}
+                    enabled={false}
                   >
-                    <Picker.Item label="Select option" value="" />
+                    <Picker.Item label={item.line} value="" />
                     {lineOptions.map((option, index) => (
                       <Picker.Item key={index} label={option} value={option} />
                     ))}
@@ -479,8 +652,9 @@ const CILTinspection = ({ navigation }) => {
                     selectedValue={machine}
                     style={styles.dropdown}
                     onValueChange={(itemValue) => setMachine(itemValue)}
+                    enabled={false}
                   >
-                    <Picker.Item label="Select option" value="" />
+                    <Picker.Item label={item.machine} value="" />
                     {machineOptions.map((option, index) => (
                       <Picker.Item key={index} label={option} value={option} />
                     ))}
@@ -503,6 +677,7 @@ const CILTinspection = ({ navigation }) => {
                       setProduct(itemValue);
                       updateProcessOrder();
                     }}
+                    enabled={false}
                   >
                     <Picker.Item label="Select option" value="" />
                     {productOptions.map((option) => (
@@ -534,6 +709,7 @@ const CILTinspection = ({ navigation }) => {
                       // fetchInspectionData(); // Fetch data based on the selected package type
                       fetchInspectionData(itemValue); // Fetch data based on the selected package type
                     }}
+                    enabled={false}
                   >
                     <Picker.Item label="Select option" value="" />
                     {packageOptions.map((option) => (
@@ -573,6 +749,7 @@ const CILTinspection = ({ navigation }) => {
                   color={COLORS.lightBlue}
                 />
                 <TextInput
+                  placeholder="Catatan"
                   style={styles.input}
                   value={remarks}
                   onChangeText={(text) => setRemarks(text)}
@@ -581,87 +758,170 @@ const CILTinspection = ({ navigation }) => {
             </View>
 
             <View style={styles.wrapper}>
-              {/* Table Container */}
-              <View style={styles.table}>
-                {/* Table Head */}
-                <View style={styles.tableHead}>
-                  {/* Header Caption */}
-                  <View style={{ width: "10%" }}>
-                    <Text style={styles.tableCaption}>Done</Text>
+              {machine === "Robot Palletizer" && packageType === "GI/GR" ? (
+                <View>
+                  {/* Table Head */}
+                  <View style={styles.tableHead}>
+                    <Text style={[styles.tableCaption, { width: "10%" }]}>
+                      NO
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "10%" }]}>
+                      NO PALET
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "30%" }]}>
+                      NO CARTON
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "20%" }]}>
+                      JUMLAH CARTON
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "30%" }]}>
+                      WAKTU
+                    </Text>
                   </View>
-                  <View style={{ width: "25%" }}>
-                    <Text style={styles.tableCaption}>Activity</Text>
-                  </View>
-                  <View style={{ width: "15%" }}>
-                    <Text style={styles.tableCaption}>Standard</Text>
-                  </View>
-                  <View style={{ width: "20%" }}>
-                    <Text style={styles.tableCaption}>Periode</Text>
-                  </View>
-                  <View style={{ width: "10%" }}>
-                    <Text style={styles.tableCaption}>Hasil</Text>
-                  </View>
-                  <View style={{ width: "20%" }}>
-                    <Text style={styles.tableCaption}>Picture</Text>
-                  </View>
-                </View>
 
-                {/* Table Body */}
-                {inspectionData.map((item, index) => (
-                  <View key={index} style={styles.tableBody}>
-                    {/* Header Caption */}
-                    <View style={{ width: "10%" }}>
-                      {/* <Text style={styles.tableData}>Done</Text> */}
-                      <View style={[styles.tableData, styles.centeredContent]}>
-                        <Switch
-                          style={styles.tableData}
-                          value={item.done}
-                          onValueChange={() => toggleSwitch(index)}
-                        />
-                      </View>
-                    </View>
-                    <View style={{ width: "25%" }}>
-                      <Text style={styles.tableData}>{item.activity}</Text>
-                    </View>
-                    <View style={{ width: "15%" }}>
-                      <Text style={styles.tableData}>{item.standard}</Text>
-                    </View>
-                    <View style={{ width: "20%" }}>
-                      <Text style={styles.tableData}>{item.periode}</Text>
-                    </View>
-                    <View style={{ width: "10%" }}>
-                      {/* <Text style={styles.tableData}>Hasil</Text> */}
-                      <View style={[styles.tableData, styles.centeredContent]}>
+                  {/* Table Body */}
+                  <FlatList
+                    data={inspectionData}
+                    keyExtractor={(_, index) => index.toString()}
+                    nestedScrollEnabled={true}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.tableBody}>
+                        <Text
+                          style={[
+                            styles.tableData,
+
+                            { width: "10%", textAlign: "center" },
+                          ]}
+                        >
+                          {item.id}
+                        </Text>
                         <TextInput
-                          style={styles.tableData}
-                          value={item.results}
+                          style={[styles.tableData, { width: "10%" }]}
+                          placeholder="Isi disini"
+                          value={item.noPalet}
                           onChangeText={(text) =>
-                            handleInputChange(text, index)
+                            handleInputChangeGIGR(text, index, "noPalet")
+                          }
+                        />
+                        <TextInput
+                          style={[styles.tableData, { width: "30%" }]}
+                          placeholder="Isi disini"
+                          value={item.noCarton}
+                          onChangeText={(text) =>
+                            handleInputChangeGIGR(text, index, "noCarton")
+                          }
+                        />
+                        <TextInput
+                          style={[styles.tableData, { width: "20%" }]}
+                          placeholder="Isi disini"
+                          keyboardType="numeric"
+                          value={item.jumlahCarton}
+                          onChangeText={(text) =>
+                            handleInputChangeGIGR(text, index, "jumlahCarton")
+                          }
+                        />
+                        <TextInput
+                          style={[styles.tableData, { width: "30%" }]}
+                          placeholder="Isi disini"
+                          value={item.waktu}
+                          onChangeText={(text) =>
+                            handleInputChangeGIGR(text, index, "waktu")
                           }
                         />
                       </View>
+                    )}
+                  />
+                </View>
+              ) : (
+                <>
+                  {/* Table Container */}
+                  <View style={styles.table}>
+                    {/* Table Head */}
+                    <View style={styles.tableHead}>
+                      {/* Header Caption */}
+                      <View style={{ width: "10%" }}>
+                        <Text style={styles.tableCaption}>Done</Text>
+                      </View>
+                      <View style={{ width: "25%" }}>
+                        <Text style={styles.tableCaption}>Activity</Text>
+                      </View>
+                      <View style={{ width: "15%" }}>
+                        <Text style={styles.tableCaption}>Standard</Text>
+                      </View>
+                      <View style={{ width: "20%" }}>
+                        <Text style={styles.tableCaption}>Periode</Text>
+                      </View>
+                      <View style={{ width: "10%" }}>
+                        <Text style={styles.tableCaption}>Hasil</Text>
+                      </View>
+                      <View style={{ width: "20%" }}>
+                        <Text style={styles.tableCaption}>Picture</Text>
+                      </View>
                     </View>
-                    <View style={{ width: "20%" }}>
-                      {/* <Text style={styles.tableData}>Picture</Text> */}
 
-                      {item.picture !== null ? (
-                        <View
-                          style={[styles.tableData, styles.centeredContent]}
-                        >
-                          <ReusableOfflineUploadImage
-                            onImageSelected={(uri) =>
-                              handleImageSelected(uri, index)
-                            }
-                            uploadImage={uploadImageToServer} // Pass upload function here
-                          />
+                    {/* Table Body */}
+                    {inspectionData.map((item, index) => (
+                      <View key={index} style={styles.tableBody}>
+                        {/* Header Caption */}
+                        <View style={{ width: "10%" }}>
+                          {/* <Text style={styles.tableData}>Done</Text> */}
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <Switch
+                              style={styles.tableData}
+                              value={item.done}
+                              onValueChange={() => toggleSwitch(index)}
+                            />
+                          </View>
                         </View>
-                      ) : (
-                        <Text style={styles.tableData}>N/A</Text>
-                      )}
-                    </View>
+                        <View style={{ width: "25%" }}>
+                          <Text style={styles.tableData}>{item.activity}</Text>
+                        </View>
+                        <View style={{ width: "15%" }}>
+                          <Text style={styles.tableData}>{item.standard}</Text>
+                        </View>
+                        <View style={{ width: "20%" }}>
+                          <Text style={styles.tableData}>{item.periode}</Text>
+                        </View>
+                        <View style={{ width: "10%" }}>
+                          {/* <Text style={styles.tableData}>Hasil</Text> */}
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <TextInput
+                              placeholder="isi disini"
+                              style={styles.tableData}
+                              value={item.results}
+                              onChangeText={(text) =>
+                                handleInputChange(text, index)
+                              }
+                            />
+                          </View>
+                        </View>
+                        <View style={{ width: "20%" }}>
+                          {/* <Text style={styles.tableData}>Picture</Text> */}
+
+                          {item.picture !== null ? (
+                            <View
+                              style={[styles.tableData, styles.centeredContent]}
+                            >
+                              <ReusableOfflineUploadImage
+                                onImageSelected={(uri) =>
+                                  handleImageSelected(uri, index)
+                                }
+                                uploadImage={uploadImageToServer} // Pass upload function here
+                              />
+                            </View>
+                          ) : (
+                            <Text style={styles.tableData}>N/A</Text>
+                          )}
+                        </View>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
+                </>
+              )}
             </View>
           </>
         )}
@@ -676,13 +936,39 @@ const CILTinspection = ({ navigation }) => {
           </Text>
         </View>
 
-        <TouchableOpacity
-          style={[styles.submitButton, !agreed && styles.submitButtonDisabled]}
-          onPress={handleSubmit}
-          disabled={!agreed}
-        >
-          <Text style={styles.submitButtonText}>SUBMIT</Text>
-        </TouchableOpacity>
+        {["GI/GR"].includes(packageType) ? (
+          <>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  !agreed && styles.submitButtonDisabled,
+                ]}
+                onPress={handleSaveAsDraftGIGR}
+                disabled={!agreed}
+              >
+                <Text style={styles.submitButtonText}>SAVE AS DRAFT</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            <View></View>
+          </>
+        )}
+
+        <View>
+          <TouchableOpacity
+            style={[
+              styles.submitButton,
+              !agreed && styles.submitButtonDisabled,
+            ]}
+            onPress={() => handleSubmit(item.id)}
+            disabled={!agreed}
+          >
+            <Text style={styles.submitButtonText}>SUBMIT</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -759,7 +1045,6 @@ const styles = StyleSheet.create({
   },
   table: {
     width: "100%", // Make table take the full width
-
     margin: 15,
   },
   tableHead: {
@@ -800,6 +1085,9 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     marginLeft: 8,
   },
+  buttonContainer: {
+    paddingBottom: 16,
+  },
   submitButton: {
     backgroundColor: COLORS.blue,
     padding: 15,
@@ -816,4 +1104,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CILTinspection;
+export default EditCILTinspection;

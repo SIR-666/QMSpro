@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
+import moment from "moment-timezone";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
-  View,
+  StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Switch,
-  Alert,
-  ActivityIndicator, // Import ActivityIndicator for loading animation
+  View,
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Picker } from "@react-native-picker/picker";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import {
-  ReusableBtn,
-  ReusableDatetime,
-  ReusableOfflineUploadImage,
-} from "../../components";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import moment from "moment-timezone";
+import { ReusableDatetime, ReusableOfflineUploadImage } from "../../components";
+import { COLORS } from "../../constants/theme";
 
 const CILTinspection = ({ navigation }) => {
   const [processOrder, setProcessOrder] = useState("#Plant_Line_SKU");
@@ -95,9 +91,7 @@ const CILTinspection = ({ navigation }) => {
 
   const fetchAreaData = async () => {
     try {
-      const response = await axios.get(
-        "http://10.24.7.70:8080/getgreenTAGarea"
-      );
+      const response = await axios.get("http://10.0.2.2:8080/getgreenTAGarea");
       setAreas(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -107,7 +101,7 @@ const CILTinspection = ({ navigation }) => {
   const fetchInspectionData = async () => {
     setIsLoading(true); // Start loading animation
     try {
-      const response = await axios.get("http://10.24.7.70:8080/mastercilt");
+      const response = await axios.get("http://10.0.2.2:8080/mastercilt");
       // console.log("Inspection data:", response.data);
 
       const filteredData = response.data.filter(

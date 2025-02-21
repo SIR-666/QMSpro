@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  Modal,
-  Dimensions,
-  ActivityIndicator,
-} from "react-native";
 import moment from "moment";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const DetailLaporanShiftly = ({ route }) => {
   const { item } = route.params;
@@ -37,7 +37,7 @@ const DetailLaporanShiftly = ({ route }) => {
       setIsLoading(true);
       const formattedDate = item.date.split("T")[0];
       const response = await fetch(
-        `http://10.24.7.70:8080/getReportCILTAll/CILT/${encodeURIComponent(
+        `http://10.0.2.2:8080/getReportCILTAll/CILT/${encodeURIComponent(
           item.plant
         )}/${encodeURIComponent(item.line)}/${encodeURIComponent(
           item.shift

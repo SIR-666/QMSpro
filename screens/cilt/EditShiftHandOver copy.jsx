@@ -1,29 +1,24 @@
-import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Alert,
+  View,
 } from "react-native";
 import { Checkbox } from "react-native-paper";
-import axios from "axios";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
 import {
   ReusableDropdown,
-  ReusableDatetime,
-  ReusableDatetimeDisable,
-  ReusableBtn,
-  ReusableUploadImage,
   ReusablePhotoImage,
+  ReusableUploadImage,
   WidthSpacer,
-  HeightSpacer,
 } from "../../components";
-import reusable from "../../components/Reusable/reusable.style";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "../../constants/theme";
 
 const EditShiftHandOver = ({ navigation, route }) => {
   const [name, setName] = useState("");
@@ -129,7 +124,7 @@ const EditShiftHandOver = ({ navigation, route }) => {
     }
 
     try {
-      const response = await axios.put(`http://10.24.7.70:8080/sho/${id}`, {
+      const response = await axios.put(`http://10.0.2.2:8080/sho/${id}`, {
         nama: name,
         date: date,
         jabatan: position,
@@ -159,7 +154,7 @@ const EditShiftHandOver = ({ navigation, route }) => {
 
   const handleSaveAsDraft = async () => {
     try {
-      const response = await axios.put(`http://10.24.7.70:8080/sho/${id}`, {
+      const response = await axios.put(`http://10.0.2.2:8080/sho/${id}`, {
         nama: name,
         date: date,
         jabatan: position,

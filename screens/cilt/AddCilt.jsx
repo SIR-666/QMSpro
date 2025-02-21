@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   ScrollView,
   StyleSheet,
   Switch,
@@ -88,7 +89,7 @@ const getShiftByHour = (hour) => {
 
 const CILTinspection = ({ navigation }) => {
   const [processOrder, setProcessOrder] = useState("#Plant_Line_SKU");
-  const [packageType, setPackageType] = useState("START UP");
+  const [packageType, setPackageType] = useState("");
   const [plant, setPlant] = useState("");
   const [line, setLine] = useState("");
   const [date, setDate] = useState(new Date());
@@ -112,6 +113,17 @@ const CILTinspection = ({ navigation }) => {
   const [areas, setAreas] = useState([]);
   const [lineOptions, setLineOptions] = useState([]);
   const [machineOptions, setMachineOptions] = useState([]);
+
+  const [inspectionDataGIGR, setInspectionDataGIGR] = useState(
+    Array(50)
+      .fill()
+      .map(() => ({
+        noPalet: "",
+        noCarton: "",
+        jumlahCarton: "",
+        waktu: "",
+      }))
+  );
 
   useEffect(() => {
     // Lock the screen orientation to portrait
@@ -149,7 +161,7 @@ const CILTinspection = ({ navigation }) => {
   const fetchProductOptionsX = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("http://10.24.7.70:8080/getSKUv2/cilt");
+      const response = await axios.get("http://10.0.2.2:8080/getSKUv2/cilt");
       const options = response.data.map((item) => ({
         label: item.sku,
         value: item.sku,
@@ -189,7 +201,7 @@ const CILTinspection = ({ navigation }) => {
   const fetchProductOptions = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("http://10.24.7.70:8080/getSKUv2/cilt");
+      const response = await axios.get("http://10.0.2.2:8080/getSKUv2/cilt");
       const options = response.data.map((item) => ({
         label: item.sku,
         value: item.sku,
@@ -256,9 +268,7 @@ const CILTinspection = ({ navigation }) => {
 
   const fetchAreaData = async () => {
     try {
-      const response = await axios.get(
-        "http://10.24.7.70:8080/getgreenTAGarea"
-      );
+      const response = await axios.get("http://10.0.2.2:8080/getgreenTAGarea");
       setAreas(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -270,7 +280,7 @@ const CILTinspection = ({ navigation }) => {
     setInspectionData([]); // Reset inspection data before fetching new data
 
     try {
-      const response = await axios.get("http://10.24.7.70:8080/mastercilt");
+      const response = await axios.get("http://10.0.2.2:8080/mastercilt");
 
       if (!response.data || !Array.isArray(response.data)) {
         throw new Error("Invalid response format");
@@ -278,20 +288,6 @@ const CILTinspection = ({ navigation }) => {
 
       console.log("response.data:", response.data);
       let filteredDataMachine = [];
-      // console.log("selectedPackageType:", selectedPackageType);
-      // if (selectedPackageType === "CILT" && machine) {
-      //   filteredDataMachine = response.data.filter(
-      //     (item) => item.cilt === machine && item.type === selectedPackageType
-      //   );
-      //   // console.log("filteredDataMachine:", filteredDataMachine);
-      // } else
-      //   filteredDataMachine = response.data.filter(
-      //     (item) => item.type === selectedPackageType
-      //   );
-
-      // filteredDataMachine = response.data.filter(
-      //   (item) => item.cilt === machine && item.type === selectedPackageType
-      // );
 
       filteredDataMachine = response.data.filter(
         (item) =>
@@ -299,12 +295,6 @@ const CILTinspection = ({ navigation }) => {
           item.type.toUpperCase() === selectedPackageType.toUpperCase()
       );
 
-      console.log("filteredDataMachine:", filteredDataMachine);
-
-      console.log("machine:", machine);
-      console.log("selectedPackageType:", selectedPackageType);
-
-      // const formattedData = filteredData.map((item) => ({
       const formattedData = filteredDataMachine.map((item) => ({
         activity: item.activity,
         standard: `${item.min} - ${item.max}`,
@@ -390,6 +380,12 @@ const CILTinspection = ({ navigation }) => {
     setInspectionData(data); // Perbarui state inspectionData
   };
 
+  const handleInputChangeGIGR = (text, index, field) => {
+    const newData = [...inspectionDataGIGR];
+    newData[index][field] = text;
+    setInspectionDataGIGR(newData);
+  };
+
   // Submit form and handle image upload
   const handleSubmit = async () => {
     const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
@@ -430,6 +426,7 @@ const CILTinspection = ({ navigation }) => {
         batch,
         remarks,
         inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
+        status: 0, // Status untuk simpan adalah 0
         formOpenTime: moment(formOpenTime)
           .tz("Asia/Jakarta")
           .format("YYYY-MM-DD HH:mm:ss.SSS"),
@@ -441,7 +438,7 @@ const CILTinspection = ({ navigation }) => {
       console.log("Simpan data order:", order);
 
       // Kirim data ke server
-      const response = await axios.post("http://10.24.7.70:8080/cilt", order);
+      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
 
       if (response.status === 201) {
         Alert.alert("Success", "Data submitted successfully!");
@@ -458,68 +455,205 @@ const CILTinspection = ({ navigation }) => {
     }
   };
 
-  // const handleSubmit = async () => {
-  //   const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
+  const handleSubmitGIGR = async () => {
+    const submitTime = moment().tz("Asia/Jakarta").format();
+    let orders = [];
 
-  //   let order = {}; // Objek untuk menyimpan data order
+    try {
+      const updatedInspectionData = await Promise.all(
+        inspectionDataGIGR.map(async (item, index) => {
+          let updatedItem = { ...item, id: index + 1 };
 
-  //   try {
-  //     // Unggah gambar dan dapatkan URL server
-  //     const updatedInspectionData = await Promise.all(
-  //       inspectionData.map(async (item) => {
-  //         if (item.picture && item.picture.startsWith("file://")) {
-  //           // Hanya unggah jika gambar berupa file lokal
-  //           const serverImageUrl = await uploadImageToServer(item.picture);
-  //           return {
-  //             ...item,
-  //             picture: serverImageUrl, // Ganti URI lokal dengan URL server
-  //           };
-  //         }
-  //         return item; // Jika bukan gambar atau sudah berupa URL server, tetapkan datanya
-  //       })
-  //     );
+          if (item.picture && item.picture.startsWith("file://")) {
+            const serverImageUrl = await uploadImageToServer(item.picture);
+            updatedItem.picture = serverImageUrl;
+          }
 
-  //     // Siapkan objek order
-  //     order = {
-  //       processOrder,
-  //       packageType,
-  //       plant,
-  //       line,
-  //       date: hideDateInput
-  //         ? undefined
-  //         : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
-  //       shift,
-  //       product,
-  //       machine,
-  //       batch,
-  //       remarks,
-  //       inspectionData: updatedInspectionData,
-  //       formOpenTime: moment(formOpenTime)
-  //         .tz("Asia/Jakarta")
-  //         .format("YYYY-MM-DD HH:mm:ss.SSS"),
-  //       submitTime: moment(submitTime)
-  //         .tz("Asia/Jakarta")
-  //         .format("YYYY-MM-DD HH:mm:ss.SSS"),
-  //     };
+          return updatedItem;
+        })
+      );
 
-  //     console.log("Simpan data order:", order);
+      // Buat array orders dari table data yang ada
+      orders = tableData.map((row) => ({
+        processOrder: row.processOrder,
+        packageType: row.packageType,
+        plant: row.plant,
+        line: row.line,
+        date: hideDateInput
+          ? undefined
+          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
+        shift: row.shift,
+        product: row.product,
+        machine: row.machine,
+        batch: row.batch,
+        remarks: row.remarks,
+        inspectionData: updatedInspectionData,
+        status: 0,
+        formOpenTime: moment(formOpenTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+        submitTime: moment(submitTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+      }));
 
-  //     // Kirim data ke server
-  //     const response = await axios.post("http://10.24.7.70:8080/cilt", order);
+      console.log("Submit orders:", orders);
 
-  //     if (response.status === 201) {
-  //       Alert.alert("Success", "Data submitted successfully!");
-  //       await clearOfflineData(); // Hapus data offline setelah berhasil submit
-  //     }
-  //   } catch (error) {
-  //     console.error("Submit failed, saving offline data:", error);
-  //     await saveOfflineData(order); // Simpan data secara offline jika submit gagal
-  //     Alert.alert(
-  //       "Offline",
-  //       "No network connection. Data has been saved locally and will be submitted when you are back online."
-  //     );
-  //   }
-  // };
+      // Kirim semua data dalam satu request
+      const response = await axios.post(
+        "http://10.0.2.2:8080/cilt/list",
+        orders
+      );
+
+      if (response.status === 201) {
+        Alert.alert("Success", "Data submitted successfully!");
+        await clearOfflineData();
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Submit failed, saving offline data:", error);
+      await saveOfflineData(orders);
+      Alert.alert("Offline", "No network connection. Data saved locally.");
+    }
+  };
+
+  // Save as draft form and handle image upload
+  const handleSaveAsDraft = async () => {
+    const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
+
+    let order = {}; // Objek untuk menyimpan data order
+
+    try {
+      // Unggah gambar dan dapatkan URL server
+      const updatedInspectionData = await Promise.all(
+        inspectionData.map(async (item, index) => {
+          let updatedItem = {
+            ...item,
+            id: index + 1, // Tambahkan ID sesuai index
+          };
+
+          if (item.picture && item.picture.startsWith("file://")) {
+            // Hanya unggah jika gambar berupa file lokal
+            const serverImageUrl = await uploadImageToServer(item.picture);
+            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
+          }
+
+          return updatedItem;
+        })
+      );
+
+      // Siapkan objek order
+      order = {
+        processOrder,
+        packageType,
+        plant,
+        line,
+        date: hideDateInput
+          ? undefined
+          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
+        shift,
+        product,
+        machine,
+        batch,
+        remarks,
+        inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
+        status: 1, // Status untuk draft adalah 1
+        formOpenTime: moment(formOpenTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+        submitTime: moment(submitTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+      };
+
+      console.log("Simpan data order:", order);
+
+      // Kirim data ke server
+      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
+
+      if (response.status === 201) {
+        Alert.alert("Success", "Data submitted successfully!");
+        await clearOfflineData(); // Hapus data offline setelah berhasil submit
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Submit failed, saving offline data:", error);
+      await saveOfflineData(order); // Simpan data secara offline jika submit gagal
+      Alert.alert(
+        "Offline",
+        "No network connection. Data has been saved locally and will be submitted when you are back online."
+      );
+    }
+  };
+
+  // Save as draft form and handle image upload
+  const handleSaveAsDraftGIGR = async () => {
+    const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
+
+    let order = {}; // Objek untuk menyimpan data order
+
+    try {
+      // Unggah gambar dan dapatkan URL server
+      const updatedInspectionData = await Promise.all(
+        inspectionData.map(async (item, index) => {
+          let updatedItem = {
+            ...item,
+            id: index + 1, // Tambahkan ID sesuai index
+          };
+
+          if (item.picture && item.picture.startsWith("file://")) {
+            // Hanya unggah jika gambar berupa file lokal
+            const serverImageUrl = await uploadImageToServer(item.picture);
+            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
+          }
+
+          return updatedItem;
+        })
+      );
+
+      // Siapkan objek order
+      order = {
+        processOrder,
+        packageType,
+        plant,
+        line,
+        date: hideDateInput
+          ? undefined
+          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
+        shift,
+        product,
+        machine,
+        batch,
+        remarks,
+        inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
+        status: 1, // Status untuk draft adalah 1
+        formOpenTime: moment(formOpenTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+        submitTime: moment(submitTime)
+          .tz("Asia/Jakarta")
+          .format("YYYY-MM-DD HH:mm:ss.SSS"),
+      };
+
+      console.log("Simpan data order:", order);
+
+      // Kirim data ke server
+      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
+
+      if (response.status === 201) {
+        Alert.alert("Success", "Data submitted successfully!");
+        await clearOfflineData(); // Hapus data offline setelah berhasil submit
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Submit failed, saving offline data:", error);
+      await saveOfflineData(order); // Simpan data secara offline jika submit gagal
+      Alert.alert(
+        "Offline",
+        "No network connection. Data has been saved locally and will be submitted when you are back online."
+      );
+    }
+  };
 
   // Save offline data when API submission fails
   const saveOfflineData = async (order) => {
@@ -579,24 +713,6 @@ const CILTinspection = ({ navigation }) => {
                   />
                 </View>
               </View>
-
-              {/* Only Select Date */}
-              {/* <View style={styles.halfInputGroup}>
-                <Text style={styles.label}>Date *</Text>
-                <View style={styles.dropdownContainer}>
-                  <MaterialCommunityIcons
-                    name="calendar-range"
-                    size={24}
-                    color={COLORS.lightBlue}
-                  />
-                  <ReusableDatetime
-                    date={date}
-                    showDatePicker={showDatePicker}
-                    setShowDatePicker={setShowDatePicker}
-                    onDateChange={onDateChange}
-                  />
-                </View>
-              </View> */}
 
               <View style={styles.halfInputGroup}>
                 <Text style={styles.label}>Shift *</Text>
@@ -797,14 +913,95 @@ const CILTinspection = ({ navigation }) => {
 
             <View style={styles.wrapper}>
               {machine === "Robot Palletizer" && packageType === "GI/GR" ? (
-                <>
-                  <TextInput
-                    placeholder="Tanggal"
-                    style={styles.input}
-                    value={date}
-                    onChangeText={(text) => setDate(text)}
+                <View>
+                  {/* Table Head */}
+                  <View style={styles.tableHead}>
+                    <Text style={[styles.tableCaption, { width: "10%" }]}>
+                      NO
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "10%" }]}>
+                      NO PALET
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "30%" }]}>
+                      NO CARTON
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "20%" }]}>
+                      JUMLAH CARTON
+                    </Text>
+                    <Text style={[styles.tableCaption, { width: "30%" }]}>
+                      WAKTU
+                    </Text>
+                  </View>
+
+                  {/* Table Body */}
+                  <FlatList
+                    data={inspectionDataGIGR}
+                    keyExtractor={(_, index) => index.toString()}
+                    nestedScrollEnabled={true}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.tableBody}>
+                        <Text
+                          style={[
+                            styles.tableData,
+                            styles.centeredContent,
+                            { width: "10%", textAlign: "center" },
+                          ]}
+                        >
+                          {index + 1}
+                        </Text>
+                        <TextInput
+                          style={[
+                            styles.tableData,
+                            styles.centeredContent,
+                            { width: "10%" },
+                          ]}
+                          placeholder="Isi disini"
+                          value={item.noPalet}
+                          onChangeText={(text) =>
+                            handleInputChangeGIGR(text, index, "noPalet")
+                          }
+                        />
+                        <TextInput
+                          style={[
+                            styles.tableData,
+                            styles.centeredContent,
+                            { width: "30%" },
+                          ]}
+                          placeholder="Isi disini"
+                          value={item.noCarton}
+                          onChangeText={(text) =>
+                            handleInputChangeGIGR(text, index, "noCarton")
+                          }
+                        />
+                        <TextInput
+                          style={[
+                            styles.tableData,
+                            styles.centeredContent,
+                            { width: "20%" },
+                          ]}
+                          placeholder="Isi disini"
+                          keyboardType="numeric"
+                          value={item.jumlahCarton}
+                          onChangeText={(text) =>
+                            handleInputChangeGIGR(text, index, "jumlahCarton")
+                          }
+                        />
+                        <TextInput
+                          style={[
+                            styles.tableData,
+                            styles.centeredContent,
+                            { width: "30%" },
+                          ]}
+                          placeholder="Isi disini"
+                          value={item.waktu}
+                          onChangeText={(text) =>
+                            handleInputChangeGIGR(text, index, "waktu")
+                          }
+                        />
+                      </View>
+                    )}
                   />
-                </>
+                </View>
               ) : (
                 <>
                   {/* Table Container */}
@@ -909,19 +1106,32 @@ const CILTinspection = ({ navigation }) => {
           </Text>
         </View>
 
-        {["CHANGE OVER", "CLEANING", "START UP"].includes(packageType)}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[
-              styles.submitButton,
-              !agreed && styles.submitButtonDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={!agreed}
-          >
-            <Text style={styles.submitButtonText}>SAVE AS DRAFT</Text>
-          </TouchableOpacity>
-        </View>
+        {["CHANGE OVER", "CLEANING", "START UP", "GI/GR"].includes(
+          packageType
+        ) ? (
+          <>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  !agreed && styles.submitButtonDisabled,
+                ]}
+                onPress={
+                  packageType === "GI/GR"
+                    ? handleSaveAsDraftGIGR
+                    : handleSaveAsDraft
+                }
+                disabled={!agreed}
+              >
+                <Text style={styles.submitButtonText}>SAVE AS DRAFT</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            <View></View>
+          </>
+        )}
 
         <View>
           <TouchableOpacity
@@ -929,7 +1139,11 @@ const CILTinspection = ({ navigation }) => {
               styles.submitButton,
               !agreed && styles.submitButtonDisabled,
             ]}
-            onPress={handleSubmit}
+            onPress={
+              machine === "Robot Palletizer" && packageType === "GI/GR"
+                ? handleSubmitGIGR
+                : handleSubmit
+            }
             disabled={!agreed}
           >
             <Text style={styles.submitButtonText}>SUBMIT</Text>

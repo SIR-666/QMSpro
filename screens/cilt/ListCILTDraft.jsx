@@ -16,7 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { COLORS } from "../../constants/theme";
 
-const ListCILT = ({ navigation }) => {
+const ListCILTDraft = ({ navigation }) => {
   const [dataGreentag, setDataGreentag] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,7 +44,7 @@ const ListCILT = ({ navigation }) => {
     setIsLoading(true);
     try {
       const apiUrl = process.env.URL;
-      const response = await axios.get(`${apiUrl}/cilt?status=0`);
+      const response = await axios.get(`${apiUrl}/cilt?status=1`);
       setDataGreentag(response.data);
       setIsLoading(false);
     } catch (error) {
@@ -248,7 +248,7 @@ const ListCILT = ({ navigation }) => {
         style={styles.searchBar}
       />
 
-      <Text style={styles.title}>List CILT</Text>
+      <Text style={styles.title}>List Save As Draft</Text>
 
       <ScrollView
         refreshControl={
@@ -342,4 +342,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ListCILT;
+export default ListCILTDraft;

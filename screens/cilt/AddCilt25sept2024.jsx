@@ -1,29 +1,24 @@
-import React, { useState, useEffect } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
+import moment from "moment-timezone";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
-  View,
+  StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Switch,
-  Alert,
-  ActivityIndicator,
+  View,
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Picker } from "@react-native-picker/picker";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import {
-  ReusableBtn,
-  ReusableDatetime,
-  ReusableOfflineUploadImage,
-} from "../../components";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import moment from "moment-timezone";
-import { setIn } from "formik";
+import { ReusableDatetime, ReusableOfflineUploadImage } from "../../components";
+import { COLORS } from "../../constants/theme";
 
 // Define uploadImageToServer function here
 
@@ -154,9 +149,7 @@ const CILTinspection = ({ navigation }) => {
 
   const fetchAreaData = async () => {
     try {
-      const response = await axios.get(
-        "http://10.24.7.70:8080/getgreenTAGarea"
-      );
+      const response = await axios.get("http://10.0.2.2:8080/getgreenTAGarea");
       setAreas(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -167,7 +160,7 @@ const CILTinspection = ({ navigation }) => {
     setIsLoading(true); // Start loading animation
     setInspectionData([]);
     try {
-      const response = await axios.get("http://10.24.7.70:8080/mastercilt");
+      const response = await axios.get("http://10.0.2.2:8080/mastercilt");
       // console.log("Inspection data:", response.data);
 
       const filteredData = response.data.filter(
@@ -249,7 +242,7 @@ const CILTinspection = ({ navigation }) => {
     "ExpectedDate": "2024-10-10", "IssuedDate": "2024-10-07",
       "Line": "Motor", "Machine": "Suspension System", "MaintenanceType": "Autonomous Maintenance",
       "ObservedArea": "AM PM",
-      "Picture": "http://10.24.7.70:3003/uploads/4ad6c148-7bcc-4656-b23c-703ce61aaf03_20241007_112249_comp.jpeg",
+      "Picture": "http://10.0.2.2:3003/uploads/4ad6c148-7bcc-4656-b23c-703ce61aaf03_20241007_112249_comp.jpeg",
       "ProposedSolution": "Pro", "TagNo": "2", "TaggerName": "marjhy",
       "datesystem": "2024-10-07T04:22:25.000Z",
       "footprint": "marjhy@gmail.com", "info1": "Open", "info2": "marjhy@gmail.com"
@@ -297,7 +290,7 @@ const CILTinspection = ({ navigation }) => {
       console.log("Simpan data order:", order);
 
       // Send the form data to the server
-      const response = await axios.post("http://10.24.7.70:8080/cilt", order);
+      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
       // const response = await axios.post("http://your-api-url/cilt", order);
       if (response.status === 201) {
         Alert.alert("Success", "Data submitted successfully!");
