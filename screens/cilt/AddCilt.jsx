@@ -387,29 +387,41 @@ const CILTinspection = ({ navigation }) => {
   };
 
   // Submit form and handle image upload
-  const handleSubmit = async () => {
+  const handleSubmit = async (status) => {
     const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
-
     let order = {}; // Objek untuk menyimpan data order
 
     try {
-      // Unggah gambar dan dapatkan URL server
-      const updatedInspectionData = await Promise.all(
-        inspectionData.map(async (item, index) => {
-          let updatedItem = {
-            ...item,
-            id: index + 1, // Tambahkan ID sesuai index
-          };
+      let updatedInspectionData;
 
-          if (item.picture && item.picture.startsWith("file://")) {
-            // Hanya unggah jika gambar berupa file lokal
-            const serverImageUrl = await uploadImageToServer(item.picture);
-            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
-          }
+      // Cek kondisi untuk penggunaan inspectionData
+      if (machine === "Robot Palletizer" && packageType === "GI/GR") {
+        updatedInspectionData = await Promise.all(
+          inspectionDataGIGR.map(async (item, index) => {
+            let updatedItem = { ...item, id: index + 1 };
 
-          return updatedItem;
-        })
-      );
+            if (item.picture && item.picture.startsWith("file://")) {
+              const serverImageUrl = await uploadImageToServer(item.picture);
+              updatedItem.picture = serverImageUrl;
+            }
+
+            return updatedItem;
+          })
+        );
+      } else {
+        updatedInspectionData = await Promise.all(
+          inspectionData.map(async (item, index) => {
+            let updatedItem = { ...item, id: index + 1 };
+
+            if (item.picture && item.picture.startsWith("file://")) {
+              const serverImageUrl = await uploadImageToServer(item.picture);
+              updatedItem.picture = serverImageUrl;
+            }
+
+            return updatedItem;
+          })
+        );
+      }
 
       // Siapkan objek order
       order = {
@@ -425,208 +437,8 @@ const CILTinspection = ({ navigation }) => {
         machine,
         batch,
         remarks,
-        inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
-        status: 0, // Status untuk simpan adalah 0
-        formOpenTime: moment(formOpenTime)
-          .tz("Asia/Jakarta")
-          .format("YYYY-MM-DD HH:mm:ss.SSS"),
-        submitTime: moment(submitTime)
-          .tz("Asia/Jakarta")
-          .format("YYYY-MM-DD HH:mm:ss.SSS"),
-      };
-
-      console.log("Simpan data order:", order);
-
-      // Kirim data ke server
-      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
-
-      if (response.status === 201) {
-        Alert.alert("Success", "Data submitted successfully!");
-        await clearOfflineData(); // Hapus data offline setelah berhasil submit
-        navigation.goBack();
-      }
-    } catch (error) {
-      console.error("Submit failed, saving offline data:", error);
-      await saveOfflineData(order); // Simpan data secara offline jika submit gagal
-      Alert.alert(
-        "Offline",
-        "No network connection. Data has been saved locally and will be submitted when you are back online."
-      );
-    }
-  };
-
-  const handleSubmitGIGR = async () => {
-    const submitTime = moment().tz("Asia/Jakarta").format();
-    let orders = [];
-
-    try {
-      const updatedInspectionData = await Promise.all(
-        inspectionDataGIGR.map(async (item, index) => {
-          let updatedItem = { ...item, id: index + 1 };
-
-          if (item.picture && item.picture.startsWith("file://")) {
-            const serverImageUrl = await uploadImageToServer(item.picture);
-            updatedItem.picture = serverImageUrl;
-          }
-
-          return updatedItem;
-        })
-      );
-
-      // Buat array orders dari table data yang ada
-      orders = tableData.map((row) => ({
-        processOrder: row.processOrder,
-        packageType: row.packageType,
-        plant: row.plant,
-        line: row.line,
-        date: hideDateInput
-          ? undefined
-          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
-        shift: row.shift,
-        product: row.product,
-        machine: row.machine,
-        batch: row.batch,
-        remarks: row.remarks,
-        inspectionData: updatedInspectionData,
-        status: 0,
-        formOpenTime: moment(formOpenTime)
-          .tz("Asia/Jakarta")
-          .format("YYYY-MM-DD HH:mm:ss.SSS"),
-        submitTime: moment(submitTime)
-          .tz("Asia/Jakarta")
-          .format("YYYY-MM-DD HH:mm:ss.SSS"),
-      }));
-
-      console.log("Submit orders:", orders);
-
-      // Kirim semua data dalam satu request
-      const response = await axios.post(
-        "http://10.0.2.2:8080/cilt/list",
-        orders
-      );
-
-      if (response.status === 201) {
-        Alert.alert("Success", "Data submitted successfully!");
-        await clearOfflineData();
-        navigation.goBack();
-      }
-    } catch (error) {
-      console.error("Submit failed, saving offline data:", error);
-      await saveOfflineData(orders);
-      Alert.alert("Offline", "No network connection. Data saved locally.");
-    }
-  };
-
-  // Save as draft form and handle image upload
-  const handleSaveAsDraft = async () => {
-    const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
-
-    let order = {}; // Objek untuk menyimpan data order
-
-    try {
-      // Unggah gambar dan dapatkan URL server
-      const updatedInspectionData = await Promise.all(
-        inspectionData.map(async (item, index) => {
-          let updatedItem = {
-            ...item,
-            id: index + 1, // Tambahkan ID sesuai index
-          };
-
-          if (item.picture && item.picture.startsWith("file://")) {
-            // Hanya unggah jika gambar berupa file lokal
-            const serverImageUrl = await uploadImageToServer(item.picture);
-            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
-          }
-
-          return updatedItem;
-        })
-      );
-
-      // Siapkan objek order
-      order = {
-        processOrder,
-        packageType,
-        plant,
-        line,
-        date: hideDateInput
-          ? undefined
-          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
-        shift,
-        product,
-        machine,
-        batch,
-        remarks,
-        inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
-        status: 1, // Status untuk draft adalah 1
-        formOpenTime: moment(formOpenTime)
-          .tz("Asia/Jakarta")
-          .format("YYYY-MM-DD HH:mm:ss.SSS"),
-        submitTime: moment(submitTime)
-          .tz("Asia/Jakarta")
-          .format("YYYY-MM-DD HH:mm:ss.SSS"),
-      };
-
-      console.log("Simpan data order:", order);
-
-      // Kirim data ke server
-      const response = await axios.post("http://10.0.2.2:8080/cilt", order);
-
-      if (response.status === 201) {
-        Alert.alert("Success", "Data submitted successfully!");
-        await clearOfflineData(); // Hapus data offline setelah berhasil submit
-        navigation.goBack();
-      }
-    } catch (error) {
-      console.error("Submit failed, saving offline data:", error);
-      await saveOfflineData(order); // Simpan data secara offline jika submit gagal
-      Alert.alert(
-        "Offline",
-        "No network connection. Data has been saved locally and will be submitted when you are back online."
-      );
-    }
-  };
-
-  // Save as draft form and handle image upload
-  const handleSaveAsDraftGIGR = async () => {
-    const submitTime = moment().tz("Asia/Jakarta").format(); // Rekam waktu submit dalam zona waktu Jakarta
-
-    let order = {}; // Objek untuk menyimpan data order
-
-    try {
-      // Unggah gambar dan dapatkan URL server
-      const updatedInspectionData = await Promise.all(
-        inspectionData.map(async (item, index) => {
-          let updatedItem = {
-            ...item,
-            id: index + 1, // Tambahkan ID sesuai index
-          };
-
-          if (item.picture && item.picture.startsWith("file://")) {
-            // Hanya unggah jika gambar berupa file lokal
-            const serverImageUrl = await uploadImageToServer(item.picture);
-            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
-          }
-
-          return updatedItem;
-        })
-      );
-
-      // Siapkan objek order
-      order = {
-        processOrder,
-        packageType,
-        plant,
-        line,
-        date: hideDateInput
-          ? undefined
-          : moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss.SSS"),
-        shift,
-        product,
-        machine,
-        batch,
-        remarks,
-        inspectionData: updatedInspectionData, // Data dengan ID berdasarkan index
-        status: 1, // Status untuk draft adalah 1
+        inspectionData: updatedInspectionData, // Data sesuai kondisi
+        status: status, // 1 untuk draft, 0 untuk submit
         formOpenTime: moment(formOpenTime)
           .tz("Asia/Jakarta")
           .format("YYYY-MM-DD HH:mm:ss.SSS"),
@@ -913,7 +725,7 @@ const CILTinspection = ({ navigation }) => {
 
             <View style={styles.wrapper}>
               {machine === "Robot Palletizer" && packageType === "GI/GR" ? (
-                <View>
+                <View style={styles.table}>
                   {/* Table Head */}
                   <View style={styles.tableHead}>
                     <Text style={[styles.tableCaption, { width: "10%" }]}>
@@ -939,65 +751,79 @@ const CILTinspection = ({ navigation }) => {
                     keyExtractor={(_, index) => index.toString()}
                     nestedScrollEnabled={true}
                     renderItem={({ item, index }) => (
-                      <View style={styles.tableBody}>
-                        <Text
-                          style={[
-                            styles.tableData,
-                            styles.centeredContent,
-                            { width: "10%", textAlign: "center" },
-                          ]}
-                        >
-                          {index + 1}
-                        </Text>
-                        <TextInput
-                          style={[
-                            styles.tableData,
-                            styles.centeredContent,
-                            { width: "10%" },
-                          ]}
-                          placeholder="Isi disini"
-                          value={item.noPalet}
-                          onChangeText={(text) =>
-                            handleInputChangeGIGR(text, index, "noPalet")
-                          }
-                        />
-                        <TextInput
-                          style={[
-                            styles.tableData,
-                            styles.centeredContent,
-                            { width: "30%" },
-                          ]}
-                          placeholder="Isi disini"
-                          value={item.noCarton}
-                          onChangeText={(text) =>
-                            handleInputChangeGIGR(text, index, "noCarton")
-                          }
-                        />
-                        <TextInput
-                          style={[
-                            styles.tableData,
-                            styles.centeredContent,
-                            { width: "20%" },
-                          ]}
-                          placeholder="Isi disini"
-                          keyboardType="numeric"
-                          value={item.jumlahCarton}
-                          onChangeText={(text) =>
-                            handleInputChangeGIGR(text, index, "jumlahCarton")
-                          }
-                        />
-                        <TextInput
-                          style={[
-                            styles.tableData,
-                            styles.centeredContent,
-                            { width: "30%" },
-                          ]}
-                          placeholder="Isi disini"
-                          value={item.waktu}
-                          onChangeText={(text) =>
-                            handleInputChangeGIGR(text, index, "waktu")
-                          }
-                        />
+                      <View key={index} style={styles.tableBody}>
+                        <View style={{ width: "10%" }}>
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <Text>{index + 1}</Text>
+                          </View>
+                        </View>
+
+                        <View style={{ width: "10%" }}>
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <TextInput
+                              placeholder="Isi disini"
+                              style={styles.tableData}
+                              value={item.noPalet}
+                              onChangeText={(text) =>
+                                handleInputChangeGIGR(text, index, "noPalet")
+                              }
+                            />
+                          </View>
+                        </View>
+
+                        <View style={{ width: "30%" }}>
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <TextInput
+                              placeholder="Isi disini"
+                              style={styles.tableData}
+                              value={item.noCarton}
+                              onChangeText={(text) =>
+                                handleInputChangeGIGR(text, index, "noCarton")
+                              }
+                            />
+                          </View>
+                        </View>
+
+                        <View style={{ width: "20%" }}>
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <TextInput
+                              placeholder="Isi disini"
+                              keyboardType="numeric"
+                              style={styles.tableData}
+                              value={item.jumlahCarton}
+                              onChangeText={(text) =>
+                                handleInputChangeGIGR(
+                                  text,
+                                  index,
+                                  "jumlahCarton"
+                                )
+                              }
+                            />
+                          </View>
+                        </View>
+
+                        <View style={{ width: "30%" }}>
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <TextInput
+                              placeholder="Isi disini"
+                              style={styles.tableData}
+                              value={item.waktu}
+                              onChangeText={(text) =>
+                                handleInputChangeGIGR(text, index, "waktu")
+                              }
+                            />
+                          </View>
+                        </View>
                       </View>
                     )}
                   />
@@ -1055,7 +881,6 @@ const CILTinspection = ({ navigation }) => {
                           <Text style={styles.tableData}>{item.periode}</Text>
                         </View>
                         <View style={{ width: "10%" }}>
-                          {/* <Text style={styles.tableData}>Hasil</Text> */}
                           <View
                             style={[styles.tableData, styles.centeredContent]}
                           >
@@ -1070,8 +895,6 @@ const CILTinspection = ({ navigation }) => {
                           </View>
                         </View>
                         <View style={{ width: "20%" }}>
-                          {/* <Text style={styles.tableData}>Picture</Text> */}
-
                           {item.picture !== null ? (
                             <View
                               style={[styles.tableData, styles.centeredContent]}
@@ -1116,11 +939,7 @@ const CILTinspection = ({ navigation }) => {
                   styles.submitButton,
                   !agreed && styles.submitButtonDisabled,
                 ]}
-                onPress={
-                  packageType === "GI/GR"
-                    ? handleSaveAsDraftGIGR
-                    : handleSaveAsDraft
-                }
+                onPress={() => handleSubmit(1)}
                 disabled={!agreed}
               >
                 <Text style={styles.submitButtonText}>SAVE AS DRAFT</Text>
@@ -1139,11 +958,7 @@ const CILTinspection = ({ navigation }) => {
               styles.submitButton,
               !agreed && styles.submitButtonDisabled,
             ]}
-            onPress={
-              machine === "Robot Palletizer" && packageType === "GI/GR"
-                ? handleSubmitGIGR
-                : handleSubmit
-            }
+            onPress={() => handleSubmit(0)}
             disabled={!agreed}
           >
             <Text style={styles.submitButtonText}>SUBMIT</Text>
