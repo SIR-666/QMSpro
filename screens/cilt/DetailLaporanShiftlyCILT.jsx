@@ -230,6 +230,57 @@ const DetailLaporanShiftly = ({ route }) => {
             <View style={styles.wrapper}>
               <ScrollView horizontal>
                 <View style={styles.table}>
+                  <View style={styles.tableHeadTime}>
+                    <View style={{ width: 360 }}></View>
+                    {shiftHours.map((hour, index) => (
+                      <View key={index} style={{ width: 60 }}>
+                        {data
+                          .filter(
+                            (item) =>
+                              hour ==
+                              moment.utc(item.LastRecordTime).format("HH")
+                          )
+                          .map((filteredItem, idx) => {
+                            const lastRecordHour = moment
+                              .utc(filteredItem.LastRecordTime)
+                              .format("HH");
+                            const submitHour = moment
+                              .utc(filteredItem.submitTime)
+                              .format("HH");
+
+                            // Hitung selisih jam
+                            const isMoreThanOneHour =
+                              Math.abs(lastRecordHour - submitHour) >= 1;
+
+                            return (
+                              <>
+                                <Text
+                                  key={idx}
+                                  style={{
+                                    fontWeight: "bold",
+                                    textAlign: "center",
+                                    color: isMoreThanOneHour ? "red" : "green",
+                                  }}
+                                >
+                                  {submitHour}
+                                </Text>
+                                <Text
+                                  key={idx}
+                                  style={{
+                                    fontWeight: "bold",
+                                    textAlign: "center",
+                                    color: isMoreThanOneHour ? "red" : "green",
+                                  }}
+                                >
+                                  {moment(filteredItem.submitTime).format("mm")}
+                                </Text>
+                              </>
+                            );
+                          })}
+                      </View>
+                    ))}
+                  </View>
+
                   <View style={styles.tableHead}>
                     <View style={{ width: 60 }}>
                       <Text style={styles.tableCaption}>No</Text>
@@ -243,7 +294,7 @@ const DetailLaporanShiftly = ({ route }) => {
                     {shiftHours.map((hour, index) => (
                       <View key={index} style={{ width: 60 }}>
                         <Text style={styles.tableCaption}>{hour}</Text>
-                        {data
+                        {/* {data
                           .filter(
                             (item) =>
                               hour ==
@@ -253,7 +304,7 @@ const DetailLaporanShiftly = ({ route }) => {
                             <Text key={idx} style={styles.tableCaption}>
                               {moment(filteredItem.LastRecordTime).format("mm")}
                             </Text>
-                          ))}
+                          ))} */}
                       </View>
                     ))}
                   </View>
@@ -355,6 +406,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
+  wrapper: {
+    paddingTop: 8,
+  },
   table: {
     flexDirection: "column",
     width: "100%",
@@ -364,12 +418,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#3bcd6b",
     paddingVertical: 10,
   },
+  tableHeadTime: {
+    flexDirection: "row",
+    backgroundColor: "#f8f8f8",
+    paddingVertical: 10,
+  },
   tableBody: {
     flexDirection: "row",
     paddingVertical: 10,
   },
   tableCaption: {
     color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  timeCaption: {
+    color: "#000",
     fontWeight: "bold",
     textAlign: "center",
   },

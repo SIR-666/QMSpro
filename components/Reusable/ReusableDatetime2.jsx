@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/theme";
 
-const ReusableDatetime2 = ({ date, setDate, setShift, getShiftByHour}) => {
+const ReusableDatetime2 = ({ date, setDate, setShift, getShiftByHour }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -14,6 +14,7 @@ const ReusableDatetime2 = ({ date, setDate, setShift, getShiftByHour}) => {
   useEffect(() => {
     const hour = moment(currentDate).tz("Asia/Jakarta").format("HH");
     setShift(getShiftByHour(hour));
+    console.log(getShiftByHour(hour));
   }, [currentDate, setShift, getShiftByHour]);
 
   const onChangeDate = (event, selectedDate) => {
@@ -28,25 +29,60 @@ const ReusableDatetime2 = ({ date, setDate, setShift, getShiftByHour}) => {
   const onChangeTime = (event, selectedTime) => {
     setShowTimePicker(false);
     if (selectedTime) {
-      const updatedDate = new Date(date || new Date());
-      updatedDate.setHours(selectedTime.getHours(), selectedTime.getMinutes());
-      setDate(updatedDate);
+      const now = new Date();
+      const selectedHour = moment(selectedTime).format("HH");
+
+      // Ambil shift berdasarkan waktu sekarang
+      const currentShift = getShiftByHour(moment(now).format("HH"));
+      const selectedShift = getShiftByHour(selectedHour);
+
+      if (selectedTime > now || selectedShift !== currentShift) {
+        // Jika waktu melebihi sekarang atau tidak sesuai shift, reset ke batas yang benar
+        const updatedDate = new Date(date || now);
+        updatedDate.setHours(now.getHours(), now.getMinutes());
+        setDate(updatedDate);
+      } else {
+        // Waktu valid, set tanggal dengan waktu yang dipilih
+        const updatedDate = new Date(date || new Date());
+        updatedDate.setHours(
+          selectedTime.getHours(),
+          selectedTime.getMinutes()
+        );
+        setDate(updatedDate);
+      }
     }
   };
 
   return (
     <View style={styles.container}>
       {/* Pilih Tanggal */}
-      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputBox}>
-        <MaterialCommunityIcons name="calendar-range" size={20} color={COLORS.lightBlue} />
+      <TouchableOpacity
+        onPress={() => setShowDatePicker(true)}
+        style={styles.inputBox}
+      >
+        <MaterialCommunityIcons
+          name="calendar-range"
+          size={20}
+          color={COLORS.lightBlue}
+        />
         <Text style={styles.text}>{currentDate.toLocaleDateString()}</Text>
       </TouchableOpacity>
 
       {/* Pilih Jam */}
-      <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.inputBox}>
-        <MaterialCommunityIcons name="clock-time-four-outline" size={20} color={COLORS.lightBlue} />
+      <TouchableOpacity
+        onPress={() => setShowTimePicker(true)}
+        style={styles.inputBox}
+      >
+        <MaterialCommunityIcons
+          name="clock-time-four-outline"
+          size={20}
+          color={COLORS.lightBlue}
+        />
         <Text style={styles.text}>
-          {currentDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {currentDate.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </Text>
       </TouchableOpacity>
 

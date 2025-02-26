@@ -182,7 +182,7 @@ const Home = ({ navigation }) => {
                     "The feature is still not available."
                   );
                 } else {
-                  navigation.navigate(add);
+                  navigation.navigate(add, { username });
                 }
               }}
             >

@@ -118,20 +118,26 @@ const DetailLaporanCILTGIGR = ({ route, navigation }) => {
             {/* Table Head */}
             <View style={styles.tableHead}>
               {/* Header Caption */}
-              <View style={{ width: "10%" }}>
+              <View style={{ width: "5%" }}>
                 <Text style={styles.tableCaption}>NO</Text>
               </View>
               <View style={{ width: "10%" }}>
                 <Text style={styles.tableCaption}>NO PALET</Text>
               </View>
-              <View style={{ width: "30%" }}>
+              <View style={{ width: "25%" }}>
                 <Text style={styles.tableCaption}>NO CARTON</Text>
               </View>
-              <View style={{ width: "20%" }}>
+              <View style={{ width: "15%" }}>
                 <Text style={styles.tableCaption}>JUMLAH CARTON</Text>
               </View>
-              <View style={{ width: "30%" }}>
+              <View style={{ width: "25%" }}>
                 <Text style={styles.tableCaption}>WAKTU</Text>
+              </View>
+              <View style={{ width: "10%" }}>
+                <Text style={styles.tableCaption}>User</Text>
+              </View>
+              <View style={{ width: "10%" }}>
+                <Text style={styles.tableCaption}>Time</Text>
               </View>
             </View>
 
@@ -140,7 +146,7 @@ const DetailLaporanCILTGIGR = ({ route, navigation }) => {
               return (
                 <View key={index} style={styles.tableBody}>
                   {/* Header Caption */}
-                  <View style={{ width: "10%" }}>
+                  <View style={{ width: "5%" }}>
                     <View style={[styles.tableData, styles.centeredContent]}>
                       <Text style={styles.tableData}>{item.id}</Text>
                     </View>
@@ -150,22 +156,28 @@ const DetailLaporanCILTGIGR = ({ route, navigation }) => {
                       <Text style={[styles.tableData]}>{item.noPalet}</Text>
                     </View>
                   </View>
-                  <View style={{ width: "30%" }}>
+                  <View style={{ width: "25%" }}>
                     <View style={[styles.tableData, styles.centeredContent]}>
                       <Text style={[styles.tableData]}>{item.noCarton}</Text>
                     </View>
                   </View>
-                  <View style={{ width: "20%" }}>
+                  <View style={{ width: "15%" }}>
                     <View style={[styles.tableData, styles.centeredContent]}>
                       <Text style={[styles.tableData]}>
                         {item.jumlahCarton}
                       </Text>
                     </View>
                   </View>
-                  <View style={{ width: "30%" }}>
+                  <View style={{ width: "25%" }}>
                     <View style={[styles.tableData, styles.centeredContent]}>
                       <Text style={[styles.tableData]}>{item.waktu}</Text>
                     </View>
+                  </View>
+                  <View style={{ width: "10%" }}>
+                    <Text style={styles.tableData}>{item.user}</Text>
+                  </View>
+                  <View style={{ width: "10%" }}>
+                    <Text style={styles.tableData}>{item.time}</Text>
                   </View>
                 </View>
               );

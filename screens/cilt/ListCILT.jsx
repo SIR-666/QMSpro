@@ -1,3 +1,5 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
@@ -27,6 +29,19 @@ const ListCILT = ({ navigation }) => {
     key: "date",
     direction: "ascending",
   });
+  const [selectedShift, setSelectedShift] = useState(null);
+  const [selectedLine, setSelectedLine] = useState(null);
+  const shiftOptions = ["Shift 1", "Shift 2", "Shift 3"];
+  const lineOptions = [
+    "Line A",
+    "Line B",
+    "Line C",
+    "Line D",
+    "Line E",
+    "Line F",
+    "Line G",
+    "Line H",
+  ];
 
   useEffect(() => {
     fetchDataFromAPI();
@@ -59,9 +74,19 @@ const ListCILT = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  const filteredData = dataGreentag.filter((item) =>
-    item.processOrder.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Modifikasi filteredData untuk menyertakan filter shift dan line
+  const filteredData = dataGreentag.filter((item) => {
+    const matchesSearch = item.processOrder
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesShift = selectedShift
+      ? item.shift === selectedShift.toString()
+      : true;
+    const matchesLine = selectedLine
+      ? item.line === selectedLine.toString()
+      : true;
+    return matchesSearch && matchesShift && matchesLine;
+  });
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
@@ -250,6 +275,52 @@ const ListCILT = ({ navigation }) => {
 
       <Text style={styles.title}>List CILT</Text>
 
+      <View style={styles.row}>
+        <View style={styles.halfInputGroup}>
+          <View style={styles.dropdownContainer}>
+            <MaterialCommunityIcons
+              name="clock-outline"
+              size={24}
+              color={COLORS.lightBlue}
+            />
+            <Picker
+              selectedValue={selectedShift}
+              style={styles.dropdown}
+              onValueChange={(itemValue) => {
+                setSelectedShift(itemValue);
+              }}
+            >
+              <Picker.Item label="Filter Shift" value="" />
+              {shiftOptions.map((option, index) => (
+                <Picker.Item key={index} label={option} value={option} />
+              ))}
+            </Picker>
+          </View>
+        </View>
+
+        <View style={styles.halfInputGroup}>
+          <View style={styles.dropdownContainer}>
+            <MaterialCommunityIcons
+              name="line-scan"
+              size={24}
+              color={COLORS.lightBlue}
+            />
+            <Picker
+              selectedValue={selectedLine}
+              style={styles.dropdown}
+              onValueChange={(itemValue) => {
+                setSelectedLine(itemValue);
+              }}
+            >
+              <Picker.Item label="Filter Line" value="" />
+              {lineOptions.map((option, index) => (
+                <Picker.Item key={index} label={option} value={option} />
+              ))}
+            </Picker>
+          </View>
+        </View>
+      </View>
+
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -339,6 +410,34 @@ const styles = StyleSheet.create({
   },
   pageInfo: {
     fontSize: 16,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "start",
+    marginHorizontal: 10,
+    gap: 10,
+  },
+  halfInputGroup: {
+    width: "25%",
+    marginVertical: 5,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  dropdownContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.lightBlue,
+    borderRadius: 5,
+    height: 40,
+    paddingHorizontal: 5,
+    backgroundColor: "#ffffff",
+  },
+  dropdown: {
+    flex: 1,
+    marginLeft: 5,
   },
 });
 

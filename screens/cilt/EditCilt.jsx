@@ -89,6 +89,7 @@ const getShiftByHour = (hour) => {
 
 const EditCILTinspection = ({ route, navigation }) => {
   const { item } = route.params;
+  const [username, setUsername] = useState("");
   const [processOrder, setProcessOrder] = useState(item.processOrder || "");
   const [packageType, setPackageType] = useState(item.packageType || "");
   const [plant, setPlant] = useState(item.plant || "");
@@ -124,6 +125,7 @@ const EditCILTinspection = ({ route, navigation }) => {
       );
     };
     lockOrientation();
+    fetchUserData();
   }, []);
 
   const packageOptions = [
@@ -141,11 +143,28 @@ const EditCILTinspection = ({ route, navigation }) => {
     { label: "Shift 1", value: "Shift 1" },
     { label: "Shift 2", value: "Shift 2" },
     { label: "Shift 3", value: "Shift 3" },
-    { label: "Long shift Pagi", value: "Long shift Pagi" },
-    { label: "Long shift Malam", value: "Long shift Malam" },
-    { label: "Start shift", value: "Start shift" },
-    { label: "End shift", value: "End shift" },
+    // { label: "Long shift Pagi", value: "Long shift Pagi" },
+    // { label: "Long shift Malam", value: "Long shift Malam" },
+    // { label: "Start shift", value: "Start shift" },
+    // { label: "End shift", value: "End shift" },
   ];
+
+  const fetchUserData = async () => {
+    try {
+      const urlApi = process.env.URL;
+      const email = await AsyncStorage.getItem("user");
+      const response1 = await fetch(`${urlApi}/getUser?email=${email}`);
+
+      if (!response1.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response1.json();
+      setUsername(data.username);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   // Fetch product options from API
 
@@ -298,7 +317,10 @@ const EditCILTinspection = ({ route, navigation }) => {
         (value, index, self) =>
           self.indexOf(value) === index &&
           value !== "Straw Applicator" &&
-          value !== "Cap Applicator"
+          value !== "Cap Applicator" &&
+          value !== "Code Pack" &&
+          value !== "Helix" &&
+          value !== "Weight Checker"
       );
 
     setMachineOptions(filteredMachines);
@@ -344,14 +366,30 @@ const EditCILTinspection = ({ route, navigation }) => {
 
   const handleInputChange = (text, index) => {
     let data = [...inspectionData];
+
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const formattedTime = `${hours}:${minutes}`;
+
     data[index].results = text; // Perbarui nilai results
+    data[index].time = formattedTime; // Perbarui nilai time
+    data[index].user = username; // Perbarui nilai user
     data[index].done = !!text; // Jika ada teks yang dimasukkan, atur done menjadi true
     setInspectionData(data); // Perbarui state inspectionData
   };
 
   const handleInputChangeGIGR = (text, index, field) => {
     const newData = [...inspectionData];
+
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const formattedTime = `${hours}:${minutes}`;
+
     newData[index][field] = text;
+    newData[index].time = formattedTime; // Perbarui nilai time
+    newData[index].user = username; // Perbarui nilai user
     setInspectionData(newData);
   };
 
@@ -700,13 +738,13 @@ const EditCILTinspection = ({ route, navigation }) => {
                       NO PALET
                     </Text>
                     <Text style={[styles.tableCaption, { width: "30%" }]}>
-                      NO CARTON
+                      NO CARTON {"\n"}(1-64)
                     </Text>
                     <Text style={[styles.tableCaption, { width: "20%" }]}>
                       JUMLAH CARTON
                     </Text>
                     <Text style={[styles.tableCaption, { width: "30%" }]}>
-                      WAKTU
+                      WAKTU {"\n"}(07:00-07:10)
                     </Text>
                   </View>
 

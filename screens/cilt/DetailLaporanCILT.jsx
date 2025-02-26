@@ -118,23 +118,29 @@ const DetailLaporanShiftly = ({ route, navigation }) => {
             {/* Table Head */}
             <View style={styles.tableHead}>
               {/* Header Caption */}
-              <View style={{ width: "10%" }}>
+              <View style={{ width: "5%" }}>
                 <Text style={styles.tableCaption}>No</Text>
               </View>
-              <View style={{ width: "25%" }}>
+              <View style={{ width: "20%" }}>
                 <Text style={styles.tableCaption}>Activity</Text>
               </View>
               <View style={{ width: "15%" }}>
                 <Text style={styles.tableCaption}>Standard</Text>
               </View>
-              <View style={{ width: "20%" }}>
+              <View style={{ width: "15%" }}>
                 <Text style={styles.tableCaption}>Periode</Text>
               </View>
               <View style={{ width: "10%" }}>
                 <Text style={styles.tableCaption}>Result</Text>
               </View>
-              <View style={{ width: "20%" }}>
+              <View style={{ width: "15%" }}>
                 <Text style={styles.tableCaption}>Picture</Text>
+              </View>
+              <View style={{ width: "10%" }}>
+                <Text style={styles.tableCaption}>User</Text>
+              </View>
+              <View style={{ width: "10%" }}>
+                <Text style={styles.tableCaption}>Time</Text>
               </View>
             </View>
 
@@ -149,19 +155,19 @@ const DetailLaporanShiftly = ({ route, navigation }) => {
               return (
                 <View key={index} style={styles.tableBody}>
                   {/* Header Caption */}
-                  <View style={{ width: "10%" }}>
+                  <View style={{ width: "5%" }}>
                     {/* <Text style={styles.tableData}>Done</Text> */}
                     <View style={[styles.tableData, styles.centeredContent]}>
                       <Text style={styles.tableData}>{index + 1}</Text>
                     </View>
                   </View>
-                  <View style={{ width: "25%" }}>
+                  <View style={{ width: "20%" }}>
                     <Text style={styles.tableData}>{item.activity}</Text>
                   </View>
                   <View style={{ width: "15%" }}>
                     <Text style={styles.tableData}>{item.standard}</Text>
                   </View>
-                  <View style={{ width: "20%" }}>
+                  <View style={{ width: "15%" }}>
                     <Text style={styles.tableData}>{item.periode}</Text>
                   </View>
                   <View style={{ width: "10%" }}>
@@ -176,14 +182,15 @@ const DetailLaporanShiftly = ({ route, navigation }) => {
                       <Text
                         style={[
                           styles.tableData,
-                          isInStandard ? styles.green : styles.red,
+                          styles.infoText,
+                          // isInStandard ? styles.green : styles.red,
                         ]}
                       >
                         {item.results}
                       </Text>
                     </View>
                   </View>
-                  <View style={{ width: "20%" }}>
+                  <View style={{ width: "15%" }}>
                     {item.picture !== null && item.picture !== "" ? (
                       <TouchableOpacity
                         onPress={() => handlePress(item.picture)} // Set the image in the modal
@@ -195,6 +202,12 @@ const DetailLaporanShiftly = ({ route, navigation }) => {
                     ) : (
                       <Text style={styles.tableData}>N/A</Text>
                     )}
+                  </View>
+                  <View style={{ width: "10%" }}>
+                    <Text style={styles.tableData}>{item.user}</Text>
+                  </View>
+                  <View style={{ width: "10%" }}>
+                    <Text style={styles.tableData}>{item.time}</Text>
                   </View>
                 </View>
               );
