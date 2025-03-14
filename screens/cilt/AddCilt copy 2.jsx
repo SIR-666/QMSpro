@@ -91,7 +91,9 @@ const CILTinspection = ({ navigation }) => {
 
   const fetchAreaData = async () => {
     try {
-      const response = await axios.get("http://10.0.2.2:8080/getgreenTAGarea");
+      const response = await axios.get(
+        "http://10.24.7.70:8080/getgreenTAGarea"
+      );
       setAreas(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -101,7 +103,7 @@ const CILTinspection = ({ navigation }) => {
   const fetchInspectionData = async () => {
     setIsLoading(true); // Start loading animation
     try {
-      const response = await axios.get("http://10.0.2.2:8080/mastercilt");
+      const response = await axios.get("http://10.24.7.70:8080/mastercilt");
       // console.log("Inspection data:", response.data);
 
       const filteredData = response.data.filter(

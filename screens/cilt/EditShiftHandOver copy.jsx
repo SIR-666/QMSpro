@@ -124,7 +124,7 @@ const EditShiftHandOver = ({ navigation, route }) => {
     }
 
     try {
-      const response = await axios.put(`http://10.0.2.2:8080/sho/${id}`, {
+      const response = await axios.put(`http://10.24.7.70:8080/sho/${id}`, {
         nama: name,
         date: date,
         jabatan: position,
@@ -154,7 +154,7 @@ const EditShiftHandOver = ({ navigation, route }) => {
 
   const handleSaveAsDraft = async () => {
     try {
-      const response = await axios.put(`http://10.0.2.2:8080/sho/${id}`, {
+      const response = await axios.put(`http://10.24.7.70:8080/sho/${id}`, {
         nama: name,
         date: date,
         jabatan: position,

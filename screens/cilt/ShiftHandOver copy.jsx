@@ -82,7 +82,7 @@ export default ShiftHandOver = ({ navigation }) => {
     }
 
     try {
-      const response = await axios.post("http://10.0.2.2:8080/sho", {
+      const response = await axios.post("http://10.24.7.70:8080/sho", {
         nama: name,
         date: date,
         jabatan: position,

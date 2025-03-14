@@ -11,7 +11,6 @@ import {
   FlatList,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -171,7 +170,7 @@ const EditCILTinspection = ({ route, navigation }) => {
   const fetchProductOptionsX = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("http://10.0.2.2:8080/getSKUv2/cilt");
+      const response = await axios.get("http://10.24.7.70:8080/getSKUv2/cilt");
       const options = response.data.map((item) => ({
         label: item.sku,
         value: item.sku,
@@ -211,7 +210,7 @@ const EditCILTinspection = ({ route, navigation }) => {
   const fetchProductOptions = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("http://10.0.2.2:8080/getSKUv2/cilt");
+      const response = await axios.get("http://10.24.7.70:8080/getSKUv2/cilt");
       const options = response.data.map((item) => ({
         label: item.sku,
         value: item.sku,
@@ -278,7 +277,9 @@ const EditCILTinspection = ({ route, navigation }) => {
 
   const fetchAreaData = async () => {
     try {
-      const response = await axios.get("http://10.0.2.2:8080/getgreenTAGarea");
+      const response = await axios.get(
+        "http://10.24.7.70:8080/getgreenTAGarea"
+      );
       setAreas(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -446,7 +447,7 @@ const EditCILTinspection = ({ route, navigation }) => {
 
       // Kirim data ke server
       const response = await axios.put(
-        `http://10.0.2.2:8080/cilt/${id}`,
+        `http://10.24.7.70:8080/cilt/${id}`,
         order
       );
 
@@ -838,19 +839,25 @@ const EditCILTinspection = ({ route, navigation }) => {
                     {/* Table Head */}
                     <View style={styles.tableHead}>
                       {/* Header Caption */}
-                      <View style={{ width: "10%" }}>
+                      {/* <View style={{ width: "10%" }}>
                         <Text style={styles.tableCaption}>Done</Text>
-                      </View>
-                      <View style={{ width: "25%" }}>
+                      </View> */}
+                      <View style={{ width: "20%" }}>
                         <Text style={styles.tableCaption}>Activity</Text>
                       </View>
-                      <View style={{ width: "15%" }}>
-                        <Text style={styles.tableCaption}>Standard</Text>
+                      <View style={{ width: "7%" }}>
+                        <Text style={styles.tableCaption}>G</Text>
+                      </View>
+                      <View style={{ width: "7%" }}>
+                        <Text style={styles.tableCaption}>N</Text>
+                      </View>
+                      <View style={{ width: "7%" }}>
+                        <Text style={styles.tableCaption}>R</Text>
                       </View>
                       <View style={{ width: "20%" }}>
                         <Text style={styles.tableCaption}>Periode</Text>
                       </View>
-                      <View style={{ width: "10%" }}>
+                      <View style={{ width: "20%" }}>
                         <Text style={styles.tableCaption}>Hasil</Text>
                       </View>
                       <View style={{ width: "20%" }}>
@@ -862,8 +869,7 @@ const EditCILTinspection = ({ route, navigation }) => {
                     {inspectionData.map((item, index) => (
                       <View key={index} style={styles.tableBody}>
                         {/* Header Caption */}
-                        <View style={{ width: "10%" }}>
-                          {/* <Text style={styles.tableData}>Done</Text> */}
+                        {/* <View style={{ width: "10%" }}>
                           <View
                             style={[styles.tableData, styles.centeredContent]}
                           >
@@ -873,29 +879,54 @@ const EditCILTinspection = ({ route, navigation }) => {
                               onValueChange={() => toggleSwitch(index)}
                             />
                           </View>
-                        </View>
-                        <View style={{ width: "25%" }}>
+                        </View> */}
+                        <View style={{ width: "20%" }}>
                           <Text style={styles.tableData}>{item.activity}</Text>
                         </View>
-                        <View style={{ width: "15%" }}>
-                          <Text style={styles.tableData}>{item.standard}</Text>
+                        <View style={{ width: "7%" }}>
+                          <Text style={styles.tableData}>
+                            {item.good ?? "-"}
+                          </Text>
+                        </View>
+                        <View style={{ width: "7%" }}>
+                          <Text style={styles.tableData}>
+                            {item.need ?? "-"}
+                          </Text>
+                        </View>
+                        <View style={{ width: "7%" }}>
+                          <Text style={styles.tableData}>
+                            {item.red ?? "-"}
+                          </Text>
                         </View>
                         <View style={{ width: "20%" }}>
                           <Text style={styles.tableData}>{item.periode}</Text>
                         </View>
-                        <View style={{ width: "10%" }}>
-                          {/* <Text style={styles.tableData}>Hasil</Text> */}
+                        <View style={{ width: "20%" }}>
                           <View
                             style={[styles.tableData, styles.centeredContent]}
                           >
-                            <TextInput
-                              placeholder="isi disini"
-                              style={styles.tableData}
-                              value={item.results}
-                              onChangeText={(text) =>
-                                handleInputChange(text, index)
-                              }
-                            />
+                            {item.status === "1" ? (
+                              <TextInput
+                                placeholder="isi disini"
+                                style={styles.tableData}
+                                value={item.results}
+                                onChangeText={(text) =>
+                                  handleInputChange(text, index)
+                                }
+                              />
+                            ) : (
+                              <Picker
+                                selectedValue={item.results}
+                                onValueChange={(value) =>
+                                  handleInputChange(value, index)
+                                }
+                                style={styles.picker}
+                              >
+                                <Picker.Item label="Select" value="" />
+                                <Picker.Item label="OK" value="OK" />
+                                <Picker.Item label="NOT OK" value="NOT OK" />
+                              </Picker>
+                            )}
                           </View>
                         </View>
                         <View style={{ width: "20%" }}>
@@ -1100,6 +1131,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  picker: {
+    width: "100%",
+    height: 40,
+    backgroundColor: "#f8f9fa",
   },
 });
 

@@ -1,3 +1,5 @@
+import * as Print from "expo-print";
+import { shareAsync } from "expo-sharing";
 import moment from "moment";
 import React, { useState } from "react";
 import {
@@ -31,6 +33,103 @@ const DetailLaporanCILTGIGR = ({ route, navigation }) => {
 
   const handleLanjutkanDraft = (item) => {
     navigation.navigate("EditCilt", { item });
+  };
+
+  const printToFile = async () => {
+    // Format Data Tambahan dengan layout dua kolom
+    const formattedData = `
+        <p><strong>Process Order:</strong> ${item.processOrder}</p>
+        <table class="general-info-table">
+          <tr>
+            <td><strong>Date:</strong> ${moment(
+              item.date,
+              "YYYY-MM-DD HH:mm:ss.SSS"
+            ).format("DD/MM/YY HH:mm:ss")}</td>
+            <td><strong>Product:</strong> ${item.product}</td>
+          </tr>
+          <tr>
+            <td><strong>Plant:</strong> ${item.plant}</td>
+            <td><strong>Line:</strong> ${item.line}</td>
+          </tr>
+          <tr>
+            <td><strong>Machine:</strong> ${item.machine}</td>
+            <td><strong>Shift:</strong> ${item.shift}</td>
+          </tr>
+          <tr>
+            <td><strong>Package:</strong> ${item.packageType}</td>
+            <td><strong>Group:</strong>  </td>
+          </tr>
+        </table>
+      `;
+
+    // Mapping inspectionData ke dalam tabel
+    const inspectionRows = inspectionData
+      .map(
+        (item, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${item.noPalet}</td>
+            <td>${item.noCarton}</td>
+            <td>${item.jumlahCarton}</td>
+            <td>${item.waktu}</td>
+            <td>${item.user}</td>
+            <td>${item.time}</td>
+        </tr>
+      `
+      )
+      .join("");
+
+    // HTML untuk file yang akan dicetak
+    const html = `
+        <html>
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h2 { text-align: center; }
+              .report-info { text-align: left; margin-bottom: 12px; }
+              .general-info-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              .general-info-table td:first-child { width: 35%; }
+              .general-info-table td:last-child { width: 65%; }
+              .general-info-table td { border: 1px solid black; padding: 5px; text-align: left; vertical-align: top; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid black; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              img { display: block; margin: auto; }
+            </style>
+          </head>
+          <body>
+            <h2>PT. GREENFIELDS INDONESIA</h2>
+            <div class="report-info">
+              ${formattedData}
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>No Palet</th>
+                  <th>No Carton</th>
+                  <th>Jumlah Carton</th>
+                  <th>Waktu</th>
+                  <th>User</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${inspectionRows}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+    try {
+      const { uri } = await Print.printToFileAsync({ html });
+      console.log("File has been saved to:", uri);
+      await shareAsync(uri, { UTI: ".pdf", mimeType: "application/pdf" });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
   };
 
   return (
@@ -108,7 +207,14 @@ const DetailLaporanCILTGIGR = ({ route, navigation }) => {
           </>
         ) : (
           <>
-            <View></View>
+            <View>
+              <TouchableOpacity
+                style={[styles.submitButton]}
+                onPress={printToFile}
+              >
+                <Text style={styles.submitButtonText}>DOWNLOAD REPORT</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
 
