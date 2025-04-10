@@ -43,15 +43,15 @@ const Home = ({ navigation }) => {
   const data = [
     {
       id: 1,
-      title: "CILT",
-      image: require("../../assets/ciltproblack.png"),
-      link: "HomeCILT",
+      title: "INPUT PARAMETER",
+      image: require("../../assets/param.jpg"),
+      link: "Paraminspection",
     },
 
     {
       id: 2,
-      title: "HAND OVER",
-      image: require("../../assets/solidarity.png"),
+      title: "DRAFT",
+      image: require("../../assets/draft.png"),
       link: "HomeHO",
       // link: "ShiftHandOver",
     },
@@ -72,15 +72,15 @@ const Home = ({ navigation }) => {
 
       // const profile = await AsyncStorage.getItem("profile");
 
-      console.log("fetchUserData email", email);
-      console.log("fetchUserData fcmToken", fcmToken);
+      // console.log("fetchUserData email", email);
+      // console.log("fetchUserData fcmToken", fcmToken);
       // console.log("profile", profile);
 
       const response1 = await fetch(`${urlApi}/getUser?email=${email}`);
       const response2 = await fetch(`${urlApi}/findIdByTokenFcm/${fcmToken}`);
 
-      console.log("response1", response1);
-      console.log("response2", response2);
+      // console.log("response1", response1);
+      // console.log("response2", response2);
 
       if (!response1.ok && !response2) {
         throw new Error("Network response was not ok");
@@ -89,8 +89,8 @@ const Home = ({ navigation }) => {
       const data = await response1.json();
       const idToken = await response2.json();
 
-      console.log("data :", data);
-      console.log("idToken :", idToken);
+      // console.log("data :", data);
+      // console.log("idToken :", idToken);
       // console.log("id Token :", idToken.id, "id User :", data.id);
       const url = `${urlApi}/greenTAGuserFcm`; // Sesuaikan dengan URL endpoint Anda
       const userData = {
@@ -98,7 +98,7 @@ const Home = ({ navigation }) => {
         id_greenTAGfcm: idToken.id, // Ganti dengan FCM ID yang sesuai
       };
       const response = await axios.post(url, userData);
-      console.log("Response:", response.data);
+      // console.log("Response:", response.data);
 
       setUsername(data.username);
       setProfile(data.profile);
@@ -110,7 +110,7 @@ const Home = ({ navigation }) => {
   // Panggil fungsi fetchUserData pada saat komponen di-mount
   useEffect(() => {
     fetchUserData();
-    console.log("width :", width, "height", height);
+    // console.log("width :", width, "height", height);
   }, []);
 
   return (
@@ -119,25 +119,21 @@ const Home = ({ navigation }) => {
       <View style={styles.header2}>
         <Image
           style={styles.icon}
-          // width="100%"
-          // height="100%"
-          contentFit="cover"
-          source={require("../../assets/images/bgLong.png")}
+          source={require("../../assets/images/MS.png")}
         />
         {/* <Text style={styles.mainTitle}>Greenfields</Text> */}
       </View>
 
       <View style={styles.user}>
-        <Text style={styles.driver}>{profile}</Text>
-        <Text style={styles.userLogin}>{username}</Text>
-        {/* <Text style={styles.driver}>Operator</Text>
-        <Text style={styles.userLogin}>Purnomo</Text> */}
-
         <Image
           style={styles.userChild}
           contentFit="cover"
           source={require("../../assets/ellipse-20.png")}
         />
+        <Text style={styles.driver}>{profile}</Text>
+        <Text style={styles.userLogin}>{username}</Text>
+        {/* <Text style={styles.driver}>Operator</Text>
+        <Text style={styles.userLogin}>Purnomo</Text> */}
       </View>
 
       <HeightSpacer height={80} />
@@ -148,23 +144,21 @@ const Home = ({ navigation }) => {
         data={options}
         horizontal={false}
         numColumns={2}
-        keyExtractor={(item) => {
-          return item.id;
-        }}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           return (
             <TouchableOpacity
               style={width < 720 ? styles.card : styles.cardTablet}
               onPress={() => {
                 var add = item.link;
-                console.log(add);
+                // console.log(add);
                 if (add == "Search") {
                   Alert.alert(
                     "Menu belum tersedia",
                     "Fitur ini sedang dipersiapkan, tunggu tanggal mainnya..."
                   );
                 } else {
-                  navigation.navigate(add);
+                  navigation.navigate(add, { username });
                 }
               }}
             >
@@ -184,7 +178,7 @@ const Home = ({ navigation }) => {
           );
         }}
       />
-      <Text style={styles.versionStyle}>{process.env.VERSION}</Text>
+      <Text style={styles.versionStyle}>{process.env.VERSION ?? "v1.0.0"}</Text>
     </View>
   );
 };
@@ -307,8 +301,10 @@ const styles = StyleSheet.create({
   header2: {
     top: 10,
     backgroundColor: Color.colorLightsteelblue,
-    height: 230,
+    height: 330,
     overflow: "hidden",
+    borderBottomLeftRadius: 50,
+    borderBottomRightRadius: 50,
   },
   mainTitle: {
     top: 54,
@@ -325,31 +321,30 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   icon: {
-    top: -113,
-    // right: -10,
-    // width: 329,
-    // height: 232,
-    left: -350,
-    // position: "absolute",
+    position: "absolute",
+    top: -20,
+    left: -140, // Ganti nilai ini sesuai kebutuhan agar icon terlihat
+    width: "130%",
+    height: "130%",
   },
   user: {
-    top: 212,
+    top: 250,
     width: 309,
     height: 68,
     borderRadius: Border.br_3xs,
-    left: 25,
     position: "absolute",
     overflow: "hidden",
     backgroundColor: Color.colorWhite,
     borderColor: Color.colorSilver,
-    borderWidth: 2,
+    // borderWidth: 2,
+    alignSelf: "center", // Menengahkan secara horizontal
   },
   driver: {
     top: 26,
     fontSize: 14,
     height: 40,
     width: 169,
-    left: 28,
+    left: 100,
     color: Color.colorBlack,
     // fontFamily: FontFamily.poppinsRegular,
     textAlign: "left",
@@ -363,7 +358,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_base,
     height: 40,
     width: 169,
-    left: 28,
+    left: 100,
     color: Color.colorBlack,
     top: 4,
     textAlign: "left",
@@ -372,8 +367,8 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   userChild: {
-    top: 12,
-    left: 240,
+    top: 10,
+    left: 40,
     width: 44,
     height: 44,
     position: "absolute",

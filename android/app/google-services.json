@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "997062489159",
+    "project_id": "ciltpro",
+    "storage_bucket": "ciltpro.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997062489159:android:caf750d8acf557ccc12d62",
+        "android_client_info": {
+          "package_name": "com.greenfields.ciltpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDmVh3FejQ9yCIpPsplVdJUzafHtugsbY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

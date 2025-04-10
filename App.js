@@ -1,50 +1,58 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useFonts } from "expo-font";
 import * as ScreenOrientation from "expo-screen-orientation";
+import { useFonts } from "expo-font";
 import * as Splashscreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
-  AddCilt,
-  AllReviews,
-  ChecklistScreen,
+  Paraminspection,
+  inputMuatan,
+  Onboarding,
+  Search,
   CountryDetails,
-  DetailLaporanCILT,
-  DetailLaporanCILTGIGR,
-  DetailLaporanShiftlyCILT,
-  EditCilt,
-  EditShiftHandOver,
-  Failed,
-  HomeCILT,
-  HomeHO,
+  AllReviews,
+  AddReviews,
+  Recommended,
+  PlaceDetails,
   HotelDetails,
   HotelList,
   HotelSearch,
-  ListCILT,
-  ListCILTDraft,
-  ListShiftHandOver,
-  Onboarding,
-  PaymentMethod,
-  PlaceDetails,
-  PopularDestinations,
-  PopularHotels,
-  Recommended,
-  Search,
-  SelectedRoom,
   SelectRoom,
+  Payments,
   Settings,
-  ShiftHandOver,
+  SelectedRoom,
   Successful,
+  Failed,
+  PopularDestinations,
+  PaymentMethod,
+  PopularHotels,
+  AddCilt,
+  ChecklistScreen,
+  ShiftHandOver,
+  ListShiftHandOver,
+  ListCILT,
+  DetailLaporanShiftlyCILT,
+  DetailLaporanCILT,
+  HomeHO,
+  HomeCILT,
+  EditShiftHandOver,
+  // EditGreentag,
+  // TagScanner,
 } from "./screens";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import messaging from "@react-native-firebase/messaging";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { StatusBar } from "expo-status-bar";
-import { Alert } from "react-native";
-import AuthTopTab from "./navigation/AuthTopTab";
 import BottomTabNavigation from "./navigation/BottomTabNavigation";
+import AuthTopTab from "./navigation/AuthTopTab";
+import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import AddCard from "./screens/setttings/AddCard";
+import { StyleSheet, Text, View, Alert } from "react-native";
+import messaging from "@react-native-firebase/messaging";
+import axios from "axios";
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 //import PushNotification from 'react-native-push-notification';
 
 const Stack = createNativeStackNavigator();
@@ -324,11 +332,6 @@ export default function App() {
           component={AddCilt}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="EditCilt"
-          component={EditCilt}
-          options={{ headerShown: false }}
-        />
         {/* inputMuatan */}
         <Stack.Screen
           name="AllReviews"
@@ -415,15 +418,9 @@ export default function App() {
           component={ListShiftHandOver}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="ListCILT"
           component={ListCILT}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ListCILTDraft"
-          component={ListCILTDraft}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -434,11 +431,6 @@ export default function App() {
         <Stack.Screen
           name="DetailLaporanCILT"
           component={DetailLaporanCILT}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="DetailLaporanCILTGIGR"
-          component={DetailLaporanCILTGIGR}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -454,6 +446,11 @@ export default function App() {
         <Stack.Screen
           name="EditShiftHandOver"
           component={EditShiftHandOver}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Paraminspection"
+          component={Paraminspection}
           options={{ headerShown: false }}
         />
         {/* 

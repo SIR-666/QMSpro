@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "CILTpro",
-    "slug": "ciltpro",
+    "name": "GreenSync",
+    "slug": "greensync",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -30,7 +30,7 @@
           "apiKey": "AIzaSyBmLj_6tI-wVz3yrcNXg6qTi1VPAOmzMNY"
         }
       },
-      "package": "com.greenfields.ciltpro"
+      "package": "com.greenfields.qmspro"
     },
     "web": {
       "favicon": "./assets/ciltproicon2.png"
@@ -53,9 +53,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "2fd04d08-786b-4fef-883b-ad00d09fe4b0"
+        "projectId": "eae3f39e-6745-4f07-9123-1ddeb8a5f727"
       }
     },
-    "owner": "raffyjo"
+    "owner": "sir666"
   }
 }

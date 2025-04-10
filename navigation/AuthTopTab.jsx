@@ -20,7 +20,7 @@ const AuthTopTab = ({ navigation }) => {
           mode={"contain"}
         /> */}
         <Image
-          source={require("../assets/images/bgLong.png")}
+          source={require("../assets/images/BgGS.png")}
           style={{ width: "100%", height: 390 }}
         />
 

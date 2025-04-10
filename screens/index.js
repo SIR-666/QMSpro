@@ -46,11 +46,13 @@ import EditchecklistPatrol from "./greenSHIELD/EditchecklistPatrol";
 import ListRecordPatrol from "./greenSHIELD/ListRecordPatrol";
 import ListRecordPatrolAsDarft from "./greenSHIELD/ListRecordPatrolAsDarft";
 import ListTemuanPatrol from "./greenSHIELD/ListTemuanPatrol";
+import Paraminspection from "./screenqms/AddParameter"
 //import listGreentag from "./listgreentag/listGreentag";
 //import AddReviews from "./listgreentag/AddReviews";
 //import ListGreentag from "./listgreentag/listGreentag";
 
 export {
+  Paraminspection,
   AddCilt,
   AddReviews,
   AllReviews,

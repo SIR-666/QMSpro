@@ -19,7 +19,7 @@ import axios from "axios";
 import { Border, Color, FontSize } from "../../GlobalStyles";
 import checkUser from "../../hook/checkUser";
 
-const Home = ({ navigation }) => {
+const HomeQMS = ({ navigation }) => {
   const { userLogin, userData, isLoading, time } = checkUser();
 
   const [username, setUsername] = useState("");
@@ -31,10 +31,10 @@ const Home = ({ navigation }) => {
   const data = [
     {
       id: 0,
-      title: "ADD CILT2",
+      title: "ADD CILT",
       // image: require("../../assets/startup.png"),
       image: require("../../assets/ciltproblack.png"),
-      link: "Paraminspection",
+      link: "AddCilt",
       // link: "Search",
     },
     // {
@@ -386,4 +386,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default HomeQMS;
