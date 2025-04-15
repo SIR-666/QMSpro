@@ -104,6 +104,7 @@ const Paraminspection = ({ route, navigation }) => {
   const [productType, setProductType] = useState(""); // ESL atau UHT
   const [productOptions, setProductOptions] = useState([]);
   const [product, setProduct] = useState("");
+  const [productsize, setProductSize] = useState("");
 
   const [machine, setMachine] = useState("");
   const [batch, setBatch] = useState("2");
@@ -161,10 +162,11 @@ const Paraminspection = ({ route, navigation }) => {
     // console.log("type", selectedLine);
   };
 
-  const handleprodChange = (selectedProd) => {
+  const handleprodChange = (selectedProd, label) => {
     // setLine(selectedLine);
     // const type = getProductType(selectedLine);
-    setSelectedProduct(selectedProd);
+    setProductSize(selectedProd);
+    setSelectedProduct(label);
     fetchInspectionData(selectedProd);
   };
 
@@ -437,39 +439,6 @@ const Paraminspection = ({ route, navigation }) => {
     setInspectionData(data);
   };
 
-  const generateJsonOutput = () => {
-    const result = inspectionData.map((item) => {
-      let resultsOutput = {};
-
-      if (item.satuan !== null) {
-        // Input berupa nilai numerik
-        resultsOutput = {
-          value: item.results, // Langsung string angka
-        };
-      } else if (item.gnr === "Need" || item.gnr === "Reject") {
-        // Input berupa checklist
-        resultsOutput = {};
-        Object.entries(item.results || {}).forEach(([key, val]) => {
-          if (key === "OthersNote") {
-            resultsOutput["OthersNote"] = val;
-          } else {
-            resultsOutput[key] = val === true;
-          }
-        });
-      }
-
-      return {
-        parameter: item.parameter,
-        gnr: item.gnr,
-        results: resultsOutput,
-        remarks: item.remarks || "",
-      };
-    });
-
-    console.log(JSON.stringify(result, null, 2));
-    return result;
-  };
-
   const handleFieldChange = (index, fieldName, value) => {
     setInspectionData((prevData) => {
       const updatedData = [...prevData];
@@ -506,7 +475,7 @@ const Paraminspection = ({ route, navigation }) => {
         filler: line || null,
         start_production: commonData.startProduction || null,
         last_production: commonData.endProduction || null,
-        product_size: commonData.selectedProduct || null,
+        product_size: commonData.productsize || null,
         completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
       };
 
@@ -682,7 +651,10 @@ const Paraminspection = ({ route, navigation }) => {
               <Picker
                 selectedValue={selectedProduct}
                 style={styles.dropdown}
-                onValueChange={(value) => handleprodChange(value)}
+                onValueChange={(value, index) => {
+                  const selectedLabel = productOptions[index - 1]?.Prod || "";
+                  handleprodChange(value, selectedLabel);
+                }}
                 enabled={productOptions.length > 0}
               >
                 <Picker.Item label="Select Product" value="" />

@@ -52,7 +52,7 @@ const Home = ({ navigation }) => {
       id: 2,
       title: "DRAFT",
       image: require("../../assets/draft.png"),
-      link: "HomeHO",
+      link: "QMSdraft",
       // link: "ShiftHandOver",
     },
   ];

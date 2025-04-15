@@ -24,7 +24,6 @@ import SelectRoom from "./details/SelectRoom";
 import SelectedRoom from "./details/SelectedRoom";
 import Home from "./home/Home";
 import HomeCILT from "./home/HomeCILT";
-import HomeHO from "./home/HomeHO";
 import Location from "./location/Location";
 import inputMuatan from "./muatan/inputMuatan";
 import Onboarding from "./onboarding/Onboarding";
@@ -46,12 +45,14 @@ import EditchecklistPatrol from "./greenSHIELD/EditchecklistPatrol";
 import ListRecordPatrol from "./greenSHIELD/ListRecordPatrol";
 import ListRecordPatrolAsDarft from "./greenSHIELD/ListRecordPatrolAsDarft";
 import ListTemuanPatrol from "./greenSHIELD/ListTemuanPatrol";
-import Paraminspection from "./screenqms/AddParameter"
+import Paraminspection from "./screenqms/AddParameter";
+import QMSdraft from "./screenqms/DraftQMS";
 //import listGreentag from "./listgreentag/listGreentag";
 //import AddReviews from "./listgreentag/AddReviews";
 //import ListGreentag from "./listgreentag/listGreentag";
 
 export {
+  QMSdraft,
   Paraminspection,
   AddCilt,
   AddReviews,
@@ -68,7 +69,6 @@ export {
   Failed,
   Home,
   HomeCILT,
-  HomeHO,
   HotelDetails,
   HotelList,
   HotelSearch,

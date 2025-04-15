@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
+  QMSdraft,
   Paraminspection,
   inputMuatan,
   Onboarding,
@@ -13,29 +14,9 @@ import {
   AllReviews,
   AddReviews,
   Recommended,
-  PlaceDetails,
-  HotelDetails,
-  HotelList,
-  HotelSearch,
-  SelectRoom,
-  Payments,
-  Settings,
-  SelectedRoom,
   Successful,
   Failed,
-  PopularDestinations,
-  PaymentMethod,
-  PopularHotels,
-  AddCilt,
-  ChecklistScreen,
-  ShiftHandOver,
-  ListShiftHandOver,
-  ListCILT,
-  DetailLaporanShiftlyCILT,
-  DetailLaporanCILT,
-  HomeHO,
-  HomeCILT,
-  EditShiftHandOver,
+  Settings,
   // EditGreentag,
   // TagScanner,
 } from "./screens";
@@ -313,67 +294,6 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="CountryDetails"
-          component={CountryDetails}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Recommended"
-          component={Recommended}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ChecklistScreen"
-          component={ChecklistScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddCilt"
-          component={AddCilt}
-          options={{ headerShown: false }}
-        />
-        {/* inputMuatan */}
-        <Stack.Screen
-          name="AllReviews"
-          component={AllReviews}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="PlaceDetails"
-          component={PlaceDetails}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="HotelDetails"
-          component={HotelDetails}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="HotelList"
-          component={HotelList}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="HotelSearch"
-          component={HotelSearch}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="SelectRoom"
-          component={SelectRoom}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="PlacesByCountry"
-          component={PopularDestinations}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Payments"
-          component={PaymentMethod}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
           name="Success"
           component={Successful}
           options={{ headerShown: false }}
@@ -394,65 +314,16 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="SelectedRoom"
-          component={SelectedRoom}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddCard"
-          component={AddCard}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="PopularHotels"
-          component={PopularHotels}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ShiftHandOver"
-          component={ShiftHandOver}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ListShiftHandOver"
-          component={ListShiftHandOver}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ListCILT"
-          component={ListCILT}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="DetailLaporanShiftlyCILT"
-          component={DetailLaporanShiftlyCILT}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="DetailLaporanCILT"
-          component={DetailLaporanCILT}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="HomeHO"
-          component={HomeHO}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="HomeCILT"
-          component={HomeCILT}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="EditShiftHandOver"
-          component={EditShiftHandOver}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
           name="Paraminspection"
           component={Paraminspection}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="QMSdraft"
+          component={QMSdraft}
+          options={{ headerShown: false }}
+        />
+
         {/* 
     
        
