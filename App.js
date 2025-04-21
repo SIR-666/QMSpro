@@ -5,8 +5,11 @@ import { useCallback, useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
+  SampleQuantity,
+  HomeQMS,
   QMSdraft,
   Paraminspection,
+  Paraminspection2,
   inputMuatan,
   Onboarding,
   Search,
@@ -319,8 +322,23 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="Paraminspection2"
+          component={Paraminspection2}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="QMSdraft"
           component={QMSdraft}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="HomeQMS"
+          component={HomeQMS}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="SampleQuantity"
+          component={SampleQuantity}
           options={{ headerShown: false }}
         />
 

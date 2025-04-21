@@ -5,17 +5,11 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/theme";
 
-const ReusableDatetime2 = ({ date, setDate, setShift, getShiftByHour }) => {
+const ReusableDatetime2 = ({ date, setDate }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const currentDate = date || new Date();
-
-  useEffect(() => {
-    const hour = moment(currentDate).tz("Asia/Jakarta").format("HH");
-    setShift(getShiftByHour(hour));
-    console.log(getShiftByHour(hour));
-  }, [currentDate, setShift, getShiftByHour]);
 
   const onChangeDate = (event, selectedDate) => {
     setShowDatePicker(false);
@@ -33,10 +27,10 @@ const ReusableDatetime2 = ({ date, setDate, setShift, getShiftByHour }) => {
       const selectedHour = moment(selectedTime).format("HH");
 
       // Ambil shift berdasarkan waktu sekarang
-      const currentShift = getShiftByHour(moment(now).format("HH"));
-      const selectedShift = getShiftByHour(selectedHour);
+      // const currentShift = getShiftByHour(moment(now).format("HH"));
+      // const selectedShift = getShiftByHour(selectedHour);
 
-      if (selectedTime > now || selectedShift !== currentShift) {
+      if (selectedTime > now) {
         // Jika waktu melebihi sekarang atau tidak sesuai shift, reset ke batas yang benar
         const updatedDate = new Date(date || now);
         updatedDate.setHours(now.getHours(), now.getMinutes());

@@ -47,13 +47,19 @@ import ListRecordPatrolAsDarft from "./greenSHIELD/ListRecordPatrolAsDarft";
 import ListTemuanPatrol from "./greenSHIELD/ListTemuanPatrol";
 import Paraminspection from "./screenqms/AddParameter";
 import QMSdraft from "./screenqms/DraftQMS";
+import Paraminspection2 from "./screenqms/AddParameter2";
+import HomeQMS from "./home/HomeQMS";
+import SampleQuantity from "./screenqms/SampleQTY";
 //import listGreentag from "./listgreentag/listGreentag";
 //import AddReviews from "./listgreentag/AddReviews";
 //import ListGreentag from "./listgreentag/listGreentag";
 
 export {
+  SampleQuantity,
+  HomeQMS,
   QMSdraft,
   Paraminspection,
+  Paraminspection2,
   AddCilt,
   AddReviews,
   AllReviews,

@@ -88,8 +88,8 @@ const getShiftByHour = (hour) => {
   return "Unknown Shift";
 };
 
-const Paraminspection = ({ route, navigation }) => {
-  const { username } = route.params;
+const Paraminspection2 = ({ route, navigation }) => {
+  const { username, line_fil: initialLine } = route.params;
   const [processOrder, setProcessOrder] = useState("#Plant_Line_SKU");
   const [packageType, setPackageType] = useState("");
   const [plant, setPlant] = useState("");
@@ -97,9 +97,8 @@ const Paraminspection = ({ route, navigation }) => {
   const [date, setDate] = useState(new Date());
   const [proddate, setProdDate] = useState(new Date());
   const [exdate, setExDate] = useState(new Date());
-  const [shift, setShift] = useState(
-    getShiftByHour(moment(new Date()).tz("Asia/Jakarta").format("HH"))
-  );
+
+  console.log("line :", initialLine);
 
   const [productType, setProductType] = useState(""); // ESL atau UHT
   const [productOptions, setProductOptions] = useState([]);
@@ -162,6 +161,16 @@ const Paraminspection = ({ route, navigation }) => {
     // console.log("type", selectedLine);
   };
 
+  useEffect(() => {
+    if (initialLine) {
+      console.log("initial line:", initialLine);
+      setLine(initialLine);
+      const type = getProductType(initialLine);
+      setProductType(type);
+      fetchProductOptions(type);
+    }
+  }, [initialLine]);
+
   const handleprodChange = (selectedProd, label) => {
     // setLine(selectedLine);
     // const type = getProductType(selectedLine);
@@ -180,6 +189,13 @@ const Paraminspection = ({ route, navigation }) => {
     lockOrientation();
   }, []);
 
+  useEffect(() => {
+    const allGNRFilled =
+      inspectionData.length > 0 &&
+      inspectionData.every((item) => item.gnr !== "");
+    setisValidGNR(allGNRFilled);
+  }, [inspectionData]);
+
   // Fetch product options from API
 
   const toggleChecklist = (index, key) => {
@@ -196,19 +212,54 @@ const Paraminspection = ({ route, navigation }) => {
     setInspectionData(updatedData);
   };
 
-  useEffect(() => {
-    filterOptions();
-    updateProcessOrder();
-  }, [plant, line, product, packageType, date, shift, machine]);
+  const toggleChecklist_New = (index, selectedLabel, column) => {
+    const updatedData = [...inspectionData];
+    const currentItem = updatedData[index];
 
-  const onDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShowDatePicker(Platform.OS === "ios"); // Close the picker on iOS immediately
-    setDate(currentDate);
-    setShift(
-      getShiftByHour(moment(currentDate).tz("Asia/Jakarta").format("HH"))
-    );
-    updateProcessOrder(); // Update process order based on the new date
+    // Pastikan results ada
+    if (!currentItem.results || typeof currentItem.results !== "object") {
+      currentItem.results = {};
+    }
+
+    // Toggle selected label (centang/uncentang)
+    currentItem.results[selectedLabel] = !currentItem.results[selectedLabel];
+
+    // Hapus OthersNote kalau Others tidak dicentang
+    if (selectedLabel === "Others" && !currentItem.results["Others"]) {
+      delete currentItem.results["OthersNote"];
+    }
+
+    // GNR di-set ke kolom saat ini
+    currentItem.gnr = column;
+
+    // Hapus checklist dari kolom lain (mutually exclusive antar kolom)
+    const clearOtherColumns = (keys) => {
+      keys.forEach((label) => {
+        if (label !== selectedLabel) {
+          delete currentItem.results[label];
+        }
+      });
+    };
+
+    if (column === "Reject") {
+      clearOtherColumns([
+        ...Object.keys(currentItem.parsedGood || {}),
+        ...Object.keys(currentItem.parsedNeed || {}),
+      ]);
+    } else if (column === "Need") {
+      clearOtherColumns([
+        ...Object.keys(currentItem.parsedGood || {}),
+        ...Object.keys(currentItem.parsedReject || {}),
+      ]);
+    } else if (column === "Good") {
+      clearOtherColumns([
+        ...Object.keys(currentItem.parsedNeed || {}),
+        ...Object.keys(currentItem.parsedReject || {}),
+      ]);
+    }
+
+    updatedData[index] = currentItem;
+    setInspectionData(updatedData);
   };
 
   const parseGood = (goodValue) => {
@@ -340,24 +391,6 @@ const Paraminspection = ({ route, navigation }) => {
     // fetchProductOptions();
   };
 
-  const updateProcessOrder = () => {
-    const formattedPlant = plant.replace(/\s+/g, "-");
-    const formattedLine = line.replace(/\s+/g, "-");
-    const formattedProduct = product.replace(/\s+/g, "-");
-    const formattedDate = moment(date).tz("Asia/Jakarta").format("YYYY-MM-DD");
-    const formattedTime = moment(date).tz("Asia/Jakarta").format("HH-mm-ss");
-    const formattedShift = shift.replace(/\s+/g, "-");
-    const formattedMachine = machine.replace(/\s+/g, "-");
-
-    // setProcessOrder(
-    //   `#${formattedPlant}_${formattedLine}_${formattedProduct}_${formattedDate}_${formattedTime}_${formattedShift}_${formattedMachine}`
-    // );
-
-    setProcessOrder(
-      `#${formattedPlant}_${formattedLine}_${formattedDate}_${formattedShift}_${formattedMachine}`
-    );
-  };
-
   const evaluateGNR = (value, goodJson, needJson, rejectJson) => {
     console.log(value);
     console.log("good: ", goodJson);
@@ -394,24 +427,21 @@ const Paraminspection = ({ route, navigation }) => {
     return "";
   };
 
-  const handleOthersNoteChange = (index, text) => {
+  const handleOthersNoteChange = (index, text, column) => {
     setInspectionData((prevData) => {
       const updatedData = [...prevData];
       const currentItem = updatedData[index];
 
-      updatedData[index] = {
-        ...currentItem,
-        results: {
-          ...(currentItem.results || {}),
-          OthersNote: text,
-        },
-      };
+      if (!currentItem.results) currentItem.results = {};
+      if (!currentItem.results[column]) currentItem.results[column] = {};
 
+      currentItem.results[column]["OthersNote"] = text;
+      updatedData[index] = currentItem;
       return updatedData;
     });
   };
 
-  const handleInputChange = (text, index) => {
+  const handleInputChange = (text, index, gnr) => {
     let data = [...inspectionData];
 
     const now = new Date();
@@ -475,7 +505,7 @@ const Paraminspection = ({ route, navigation }) => {
         filler: line || null,
         start_production: commonData.startProduction || null,
         last_production: commonData.endProduction || null,
-        product_size: commonData.productsize || null,
+        product_size: productsize || null,
         completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
       };
 
@@ -627,7 +657,7 @@ const Paraminspection = ({ route, navigation }) => {
                 size={24}
                 color={COLORS.lightBlue}
               />
-              <Picker
+              {/* <Picker
                 selectedValue={line}
                 style={styles.dropdown}
                 onValueChange={handleLineChange}
@@ -636,6 +666,14 @@ const Paraminspection = ({ route, navigation }) => {
                 {lineOptions.map((option, index) => (
                   <Picker.Item key={index} label={option} value={option} />
                 ))}
+              </Picker> */}
+              <Picker
+                selectedValue={line}
+                style={styles.dropdown}
+                onValueChange={handleLineChange}
+                enabled={false} // disable input
+              >
+                <Picker.Item label={line || "Select Line"} value={line} />
               </Picker>
             </View>
           </View>
@@ -701,24 +739,14 @@ const Paraminspection = ({ route, navigation }) => {
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Start Production*</Text>
             <View style={styles.dropdownContainer}>
-              <ReusableDatetime2
-                date={startProd}
-                setDate={setStartProd}
-                setShift={setShift}
-                getShiftByHour={getShiftByHour}
-              />
+              <ReusableDatetime2 date={startProd} setDate={setStartProd} />
             </View>
           </View>
 
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Last Production *</Text>
             <View style={styles.dropdownContainer}>
-              <ReusableDatetime2
-                date={endProd}
-                setDate={setEndProd}
-                setShift={setShift}
-                getShiftByHour={getShiftByHour}
-              />
+              <ReusableDatetime2 date={endProd} setDate={setEndProd} />
             </View>
           </View>
         </View>
@@ -728,114 +756,148 @@ const Paraminspection = ({ route, navigation }) => {
         ) : (
           <>
             <View style={styles.wrapper}>
-              {/* Table Container */}
-              <View style={styles.table}>
-                {/* Table Head */}
-                <View style={styles.tableHead}>
-                  {/* Header Caption */}
-                  {/* <View style={{ width: "10%" }}>
+              <ScrollView style={styles.tableWrapper} horizontal>
+                {/* Table Container */}
+                <View style={styles.table}>
+                  {/* Table Head */}
+                  <View style={styles.tableHead}>
+                    {/* Header Caption */}
+                    {/* <View style={{ width: "10%" }}>
                         <Text style={styles.tableCaption}>Done</Text>
                       </View> */}
-                  <View style={{ width: "20%" }}>
-                    <Text style={styles.tableCaption}>Parameter</Text>
-                  </View>
+                    <View style={{ width: "20%" }}>
+                      <Text style={styles.tableCaption}>Parameter</Text>
+                    </View>
 
-                  <View style={{ width: "20%" }}>
-                    <Text style={styles.tableCaption}>GNR</Text>
-                  </View>
-                  <View style={{ width: "40%" }}>
-                    <Text style={styles.tableCaption}>Parameter Input</Text>
-                  </View>
-                  <View style={{ width: "21%" }}>
-                    <Text style={styles.tableCaption}>Remarks</Text>
-                  </View>
-                  {/* <View style={{ width: "20%" }}>
+                    <View style={{ width: 100 }}>
+                      <Text style={styles.tableCaption}>Good</Text>
+                    </View>
+                    <View style={{ width: 250 }}>
+                      <Text style={styles.tableCaption}>Need</Text>
+                    </View>
+                    <View style={{ width: 280 }}>
+                      <Text style={styles.tableCaption}>Reject</Text>
+                    </View>
+                    <View style={{ width: 330 }}>
+                      <Text style={styles.tableCaption}>Remark</Text>
+                    </View>
+                    <View style={{ width: 150 }}>
+                      <Text style={styles.tableCaption}>Photo</Text>
+                    </View>
+                    {/* <View style={{ width: "20%" }}>
                         <Text style={styles.tableCaption}>Picture</Text>
                       </View> */}
-                </View>
-                {/* Table Body */}
-                {loadingDataInput ? (
-                  <ActivityIndicator size="large" color={COLORS.blue} />
-                ) : (
-                  inspectionData.map((item, index) => (
-                    <View key={index} style={styles.tableBody}>
-                      {/* Header Caption */}
-                      {/* <View style={{ width: "10%" }}>
-                          <View
-                            style={[styles.tableData, styles.centeredContent]}
-                          >
-                            <Switch
-                              style={styles.tableData}
-                              value={item.done}
-                              onValueChange={() => toggleSwitch(index)}
-                            />
-                          </View>
-                        </View> */}
-                      <View style={{ width: "20%" }}>
-                        <Text style={styles.tableDataParam}>
-                          {item.parameter}
-                        </Text>
-                      </View>
+                  </View>
+                  {/* Table Body */}
+                  {loadingDataInput ? (
+                    <ActivityIndicator size="large" color={COLORS.blue} />
+                  ) : (
+                    inspectionData.map((item, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.tableBody,
+                          {
+                            backgroundColor:
+                              index % 2 === 0 ? "#ffffff" : "#f2f2f2",
+                          }, // selang-seling
+                        ]}
+                      >
+                        <View style={{ width: "20%" }}>
+                          <Text style={styles.tableDataParam}>
+                            {item.parameter}
+                          </Text>
+                        </View>
 
-                      <View style={{ width: "20%" }}>
-                        <View
-                          style={[styles.tableData, styles.centeredContent]}
-                        >
-                          <Picker
-                            selectedValue={item.gnr}
-                            onValueChange={(value) =>
-                              handleGNRChange(value, index)
-                            }
+                        {item.satuan !== null ? (
+                          <TextInput
+                            // placeholder={`Batas: ${item.good}`}
+                            placeholder={`Fill Here First`}
                             style={[
-                              styles.picker2,
+                              styles.tableData2,
                               {
                                 backgroundColor:
                                   item.gnr === "Good"
-                                    ? "#c8e6c9"
+                                    ? "#d1e7dd"
                                     : item.gnr === "Need"
-                                    ? "#fff9c4"
+                                    ? "#fff3cd"
                                     : item.gnr === "Reject"
-                                    ? "#ffcdd2"
-                                    : "#f8f9fa",
+                                    ? "#f8d7da"
+                                    : "transparent",
                               },
                             ]}
-                          >
-                            <Picker.Item label="Select" value="" />
-                            <Picker.Item label="Good" value="Good" />
-                            <Picker.Item label="Need" value="Need" />
-                            <Picker.Item label="Reject" value="Reject" />
-                          </Picker>
-                        </View>
-                      </View>
-
-                      {item.satuan !== null ? (
-                        <TextInput
-                          // placeholder={`Batas: ${item.good}`}
-                          placeholder={`Fill Here First`}
-                          style={styles.tableData2}
-                          value={item.results}
-                          keyboardType="numeric"
-                          onChangeText={(text) =>
-                            handleInputChange(text, index)
-                          }
-                          // editable={item.gnr === "Need" || item.gnr === "Reject"|| item.gnr === "Good"}
-                        />
-                      ) : Object.keys(item.parsedGood).length === 0 ? (
-                        <Text style={{ fontStyle: "italic", color: "gray" }}>
-                          Tidak ada parameter checklist
-                        </Text>
-                      ) : item.gnr === "Need" || item.gnr === "Reject" ? (
-                        // CASE 2: Checklist hanya jika GNR = Need / Reject
-                        Object.keys(item.parsedGood).length === 0 ? (
+                            value={item.results}
+                            keyboardType="numeric"
+                            width={100}
+                            onChangeText={(text) =>
+                              handleInputChange(text, index, "Good")
+                            }
+                            // editable={item.gnr === "Need" || item.gnr === "Reject"|| item.gnr === "Good"}
+                          />
+                        ) : Object.keys(item.parsedGood).length === 0 ? (
                           <Text style={{ fontStyle: "italic", color: "gray" }}>
                             Tidak ada parameter checklist
                           </Text>
-                        ) : item.gnr === "Need" ? (
+                        ) : (
+                          <TouchableOpacity
+                            onPress={() => handleGNRChange("Good", index)}
+                            style={{
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 100,
+                              height: 50,
+                              marginLeft: 10,
+                              backgroundColor:
+                                item.gnr === "Good" ? "#d1e7dd" : COLORS.blue, // Hijau kalau aktif
+                              borderRadius: 8,
+                            }}
+                          >
+                            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                              Good
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+
+                        {item.satuan !== null ? (
+                          <TextInput
+                            // placeholder={`Batas: ${item.good}`}
+                            placeholder={`Fill Here First`}
+                            style={[
+                              styles.tableData2,
+                              {
+                                backgroundColor:
+                                  item.gnr === "Good"
+                                    ? "#d1e7dd"
+                                    : item.gnr === "Need"
+                                    ? "#fff3cd"
+                                    : item.gnr === "Reject"
+                                    ? "#f8d7da"
+                                    : "transparent",
+                              },
+                            ]}
+                            value={item.results}
+                            keyboardType="numeric"
+                            width={250}
+                            marginLeft={10}
+                            onChangeText={(text) =>
+                              handleInputChange(text, index, "Need")
+                            }
+                            // editable={item.gnr === "Need" || item.gnr === "Reject"|| item.gnr === "Good"}
+                          />
+                        ) : Object.keys(item.parsedGood).length === 0 ? (
+                          <Text style={{ fontStyle: "italic", color: "gray" }}>
+                            Tidak ada parameter checklist
+                          </Text>
+                        ) : (
                           <View
                             style={{
                               alignItems: "flex-start",
-                              width: "40%",
+                              width: 250,
                               marginLeft: 10,
+                              backgroundColor:
+                                item.gnr === "Need" ? "#fff3cd" : "transparent", // Kuning kalau aktif
+                              padding: 4,
+                              borderRadius: 5,
                             }}
                           >
                             {Object.entries(item.parsedNeed).map(
@@ -854,55 +916,58 @@ const Paraminspection = ({ route, navigation }) => {
                                         : "unchecked"
                                     }
                                     onPress={() =>
-                                      toggleChecklist(index, label)
+                                      toggleChecklist_New(index, label, "Need")
                                     }
                                   />
                                   <Text>{label}</Text>
                                 </View>
                               )
                             )}
-
-                            {/* Checklist Others */}
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                              }}
-                            >
-                              <Checkbox
-                                status={
-                                  item.results?.Others ? "checked" : "unchecked"
-                                }
-                                onPress={() => toggleChecklist(index, "Others")}
-                              />
-                              <Text>Others</Text>
-                            </View>
-
-                            {/* TextInput hanya muncul jika Others dicentang */}
-                            {item.results?.Others && (
-                              <TextInput
-                                placeholder="Tulis lainnya..."
-                                value={item.results?.OthersNote || ""}
-                                onChangeText={(text) =>
-                                  handleOthersNoteChange(index, text)
-                                }
-                                style={{
-                                  borderWidth: 1,
-                                  borderColor: "#ccc",
-                                  padding: 5,
-                                  width: "100%",
-                                  marginTop: 5,
-                                  borderRadius: 5,
-                                }}
-                              />
-                            )}
                           </View>
+                        )}
+
+                        {item.satuan !== null ? (
+                          <TextInput
+                            // placeholder={`Batas: ${item.good}`}
+                            placeholder={`Fill Here First`}
+                            style={[
+                              styles.tableData2,
+                              {
+                                backgroundColor:
+                                  item.gnr === "Good"
+                                    ? "#d1e7dd"
+                                    : item.gnr === "Need"
+                                    ? "#fff3cd"
+                                    : item.gnr === "Reject"
+                                    ? "#f8d7da"
+                                    : "transparent",
+                              },
+                            ]}
+                            value={item.results}
+                            keyboardType="numeric"
+                            width={250}
+                            marginLeft={30}
+                            onChangeText={(text) =>
+                              handleInputChange(text, index, "Reject")
+                            }
+                            // editable={item.gnr === "Need" || item.gnr === "Reject"|| item.gnr === "Good"}
+                          />
+                        ) : Object.keys(item.parsedReject).length === 0 ? (
+                          <Text style={{ fontStyle: "italic", color: "gray" }}>
+                            Tidak ada parameter checklist
+                          </Text>
                         ) : (
                           <View
                             style={{
                               alignItems: "flex-start",
-                              width: "40%",
-                              marginLeft: 10,
+                              width: 250,
+                              marginLeft: 30,
+                              backgroundColor:
+                                item.gnr === "Reject"
+                                  ? "#fff3cd"
+                                  : "transparent", // Kuning kalau aktif
+                              padding: 4,
+                              borderRadius: 5,
                             }}
                           >
                             {Object.entries(item.parsedReject).map(
@@ -921,82 +986,51 @@ const Paraminspection = ({ route, navigation }) => {
                                         : "unchecked"
                                     }
                                     onPress={() =>
-                                      toggleChecklist(index, label)
+                                      toggleChecklist_New(
+                                        index,
+                                        label,
+                                        "Reject"
+                                      )
                                     }
                                   />
                                   <Text>{label}</Text>
                                 </View>
                               )
                             )}
-
-                            {/* Checklist Others */}
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                              }}
-                            >
-                              <Checkbox
-                                status={
-                                  item.results?.Others ? "checked" : "unchecked"
-                                }
-                                onPress={() => toggleChecklist(index, "Others")}
-                              />
-                              <Text>Others</Text>
-                            </View>
-
-                            {/* TextInput hanya muncul jika Others dicentang */}
-                            {item.results?.Others && (
-                              <TextInput
-                                placeholder="Tulis lainnya..."
-                                value={item.results?.OthersNote || ""}
-                                onChangeText={(text) =>
-                                  handleOthersNoteChange(index, text)
-                                }
-                                style={{
-                                  borderWidth: 1,
-                                  borderColor: "#ccc",
-                                  padding: 5,
-                                  width: "100%",
-                                  marginTop: 5,
-                                  borderRadius: 5,
-                                }}
-                              />
-                            )}
                           </View>
-                        )
-                      ) : (
-                        // CASE 3: Saat GNR = Good atau belum dipilih
-                        <Text
-                          style={{
-                            justifyContent: "center",
-                            alignItems: "center",
-                            fontStyle: "italic",
-                            color: "gray",
-                            marginLeft: 10,
-                            width: "40%",
-                          }}
-                        >
-                          Parameter Input Can't Be Selected
-                        </Text>
-                      )}
+                        )}
 
-                      <View style={{ width: "21%" }}>
-                        <TextInput
-                          placeholder="Fill Here"
-                          style={styles.tableData}
-                          value={item.remarks || ""}
-                          onChangeText={(text) =>
-                            handleFieldChange(index, "remarks", text)
-                          }
-                          multiline
-                          numberOfLines={2}
-                        />
+                        <View style={{ width: 300 }}>
+                          <TextInput
+                            placeholder="Fill Here"
+                            style={styles.tableData}
+                            value={item.remarks || ""}
+                            onChangeText={(text) =>
+                              handleFieldChange(index, "remarks", text)
+                            }
+                            multiline
+                            numberOfLines={2}
+                          />
+                        </View>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.submitButton,
+                            {
+                              alignItems: "flex-start",
+                              width: 100,
+                              height: 50,
+                              marginLeft: 30,
+                            },
+                          ]}
+                        >
+                          <Text style={styles.submitButtonText}>Capture</Text>
+                        </TouchableOpacity>
                       </View>
-                    </View>
-                  ))
-                )}
-              </View>
+                    ))
+                  )}
+                </View>
+              </ScrollView>
             </View>
           </>
         )}
@@ -1026,18 +1060,16 @@ const Paraminspection = ({ route, navigation }) => {
           </View>
         </>
 
-        <View>
-          <TouchableOpacity
-            style={[
-              styles.submitButton,
-              (!agreed || !isValidGNR) && styles.submitButtonDisabled,
-            ]}
-            onPress={() => handleSubmit(0)}
-            disabled={!agreed}
-          >
-            <Text style={styles.submitButtonText}>SUBMIT</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            (!agreed || !isValidGNR) && styles.submitButtonDisabled,
+          ]}
+          onPress={() => handleSubmit(0)}
+          disabled={!agreed || !isValidGNR} // <- ini dia yang penting
+        >
+          <Text style={styles.submitButtonText}>SUBMIT</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -1131,8 +1163,9 @@ const styles = StyleSheet.create({
   },
   tableBody: {
     flexDirection: "row",
-    // backgroundColor: "#3bcd6b",
-    padding: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    borderBottomWidth: 1,
     width: "100%",
   },
   tableCaption: {
@@ -1158,7 +1191,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center", // Center-align text in cells
     marginLeft: 10,
-    width: "40%",
+    // width: "40%",
   },
   centeredContent: {
     justifyContent: "center",
@@ -1203,6 +1236,13 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: "#f8f9fa",
   },
+  tableWrapper: {
+    // maxHeight: 400, // batas tinggi agar scroll aktif
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    backgroundColor: "#fafafa",
+  },
 });
 
-export default Paraminspection;
+export default Paraminspection2;

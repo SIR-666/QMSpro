@@ -41,20 +41,69 @@ const Home = ({ navigation }) => {
   const { width, height } = Dimensions.get("window");
 
   const data = [
+    // {
+    //   id: 1,
+    //   title: "INPUT PARAMETER",
+    //   image: require("../../assets/param.jpg"),
+    //   link: "Paraminspection",
+    // },
     {
       id: 1,
-      title: "INPUT PARAMETER",
+      title: "LINE A",
       image: require("../../assets/param.jpg"),
-      link: "Paraminspection",
+      link: "HomeQMS",
+      line_fil: "Line A",
     },
-
     {
       id: 2,
-      title: "DRAFT",
-      image: require("../../assets/draft.png"),
-      link: "QMSdraft",
-      // link: "ShiftHandOver",
+      title: "LINE B",
+      image: require("../../assets/param.jpg"),
+      link: "HomeQMS",
+      line_fil: "Line B",
     },
+    {
+      id: 3,
+      title: "LINE C",
+      image: require("../../assets/param.jpg"),
+      link: "HomeQMS",
+      line_fil: "Line C",
+    },
+    {
+      id: 4,
+      title: "LINE D",
+      image: require("../../assets/param.jpg"),
+      link: "HomeQMS",
+      line_fil: "Line D",
+    },
+    {
+      id: 5,
+      title: "LINE E",
+      image: require("../../assets/param.jpg"),
+      link: "HomeQMS",
+      line_fil: "Line E",
+    },
+    {
+      id: 6,
+      title: "LINE F",
+      image: require("../../assets/param.jpg"),
+      link: "HomeQMS",
+      line_fil: "Line F",
+    },
+    {
+      id: 7,
+      title: "LINE G",
+      image: require("../../assets/param.jpg"),
+      link: "HomeQMS",
+      line_fil: "Line G",
+    },
+
+    // {
+    //   id: 2,
+    //   title: "DRAFT",
+    //   image: require("../../assets/draft.png"),
+    //   link: "QMSdraft",
+    //   // link: "ShiftHandOver",
+    // },
   ];
 
   const [options, setOptions] = useState(data);
@@ -158,7 +207,10 @@ const Home = ({ navigation }) => {
                     "Fitur ini sedang dipersiapkan, tunggu tanggal mainnya..."
                   );
                 } else {
-                  navigation.navigate(add, { username });
+                  navigation.navigate(add, {
+                    username,
+                    line_fil: item.line_fil || "", // kirim 'Line A' jika tersedia
+                  });
                 }
               }}
             >
