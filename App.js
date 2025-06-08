@@ -5,18 +5,15 @@ import { useCallback, useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
+  QMSsubmited,
   SampleQuantity,
   HomeQMS,
   QMSdraft,
   Paraminspection,
   Paraminspection2,
-  inputMuatan,
   Onboarding,
   Search,
-  CountryDetails,
-  AllReviews,
-  AddReviews,
-  Recommended,
+  ParaminspectionDraft,
   Successful,
   Failed,
   Settings,
@@ -97,7 +94,7 @@ export default function App() {
     const checkNetworkConnection = async () => {
       try {
         const apiUrl = process.env.URL;
-        const response = await fetch(`${apiUrl}/getgreenTAGallOpen/open`); // or your API endpoint
+        const response = await fetch(`${apiUrl}/api/getdrafr`); // or your API endpoint
         if (response.ok) {
           // Connection is active, you can proceed with API calls or data retrieval
           console.log("Connected to the office network");
@@ -219,11 +216,9 @@ export default function App() {
     });
 
     // Menangani pesan di latar belakang
+    // Handler saat pesan diterima saat app background/terminate
     messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-      console.log(
-        "Message handled in the background:",
-        remoteMessage.notification
-      );
+      console.log("📥 [Background] Notification:", remoteMessage);
     });
     return unsubscribe; // Bersihkan langganan saat komponen dilepas
   }, []);
@@ -339,6 +334,16 @@ export default function App() {
         <Stack.Screen
           name="SampleQuantity"
           component={SampleQuantity}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ParaminspectionDraft"
+          component={ParaminspectionDraft}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="QMSsubmited"
+          component={QMSsubmited}
           options={{ headerShown: false }}
         />
 

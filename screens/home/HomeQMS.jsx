@@ -50,11 +50,18 @@ const HomeQMS = ({ route, navigation }) => {
     {
       id: 1,
       title: "SAMPLE QTY",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/sample.png"),
       link: "SampleQuantity",
     },
     {
       id: 2,
+      title: "SUBMITED HISTORY",
+      image: require("../../assets/submited.png"),
+      link: "QMSsubmited",
+      // link: "ShiftHandOver",
+    },
+    {
+      id: 3,
       title: "DRAFT",
       image: require("../../assets/draft.png"),
       link: "QMSdraft",
@@ -70,7 +77,7 @@ const HomeQMS = ({ route, navigation }) => {
 
   const fetchUserData = async () => {
     try {
-      const urlApi = process.env.URL;
+      const urlApi = process.env.URL4;
       // console.log(urlApi);
       const email = await AsyncStorage.getItem("user");
       const fcmToken = await AsyncStorage.getItem("fcmToken");
@@ -108,7 +115,7 @@ const HomeQMS = ({ route, navigation }) => {
       setUsername(data.username);
       setProfile(data.profile);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error username:", error);
     }
   };
 
@@ -332,12 +339,12 @@ const styles = StyleSheet.create({
   icon: {
     position: "absolute",
     top: -20,
-    left: -140, // Ganti nilai ini sesuai kebutuhan agar icon terlihat
+    left: -110, // Ganti nilai ini sesuai kebutuhan agar icon terlihat
     width: "130%",
     height: "130%",
   },
   user: {
-    top: 250,
+    top: 300,
     width: 309,
     height: 68,
     borderRadius: Border.br_3xs,

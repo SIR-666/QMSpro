@@ -50,11 +50,15 @@ import QMSdraft from "./screenqms/DraftQMS";
 import Paraminspection2 from "./screenqms/AddParameter2";
 import HomeQMS from "./home/HomeQMS";
 import SampleQuantity from "./screenqms/SampleQTY";
+import ParaminspectionDraft from "./screenqms/AddParameterDraft";
+import QMSsubmited from "./screenqms/SubmitedQMS";
 //import listGreentag from "./listgreentag/listGreentag";
 //import AddReviews from "./listgreentag/AddReviews";
 //import ListGreentag from "./listgreentag/listGreentag";
 
 export {
+  QMSsubmited,
+  ParaminspectionDraft,
   SampleQuantity,
   HomeQMS,
   QMSdraft,
@@ -74,35 +78,10 @@ export {
   EditShiftHandOver,
   Failed,
   Home,
-  HomeCILT,
-  HotelDetails,
-  HotelList,
-  HotelSearch,
-  inputMuatan,
-  ListCILT,
-  ListCILTDraft,
-  ListRecordPatrol,
-  ListRecordPatrolAsDarft,
-  ListShiftHandOver,
-  ListTemuanPatrol,
-  Location,
   Onboarding,
-  PaymentMethod,
-  Payments,
-  PlaceDetails,
-  PopularDestinations,
-  PopularHotels,
-  Profile,
-  Recommended,
   Registration,
   Search,
-  SelectedRoom,
-  SelectRoom,
   Settings,
-  ShiftHandOver,
   Signin,
   Successful,
-  TopBookings,
-  TopInfo,
-  TopTrips,
 };

@@ -24,8 +24,7 @@ const Onboarding = () => {
       {
         id: 3,
         image: require("../../assets/images/3.png"),
-        title:
-          "Optimalkan performa peralatan dengan jadwal rutin CILT yang presisi dan sesuai jadwal!",
+        title: "",
       },
     ];
   } else {
@@ -44,8 +43,7 @@ const Onboarding = () => {
       {
         id: 3,
         image: require("../../assets/images/5.jpg"),
-        title:
-          "Optimalkan performa peralatan dengan jadwal rutin CILT yang presisi dan sesuai jadwal!",
+        title: "",
       },
     ];
   }

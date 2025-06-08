@@ -30,7 +30,7 @@ const Slides = ({ item }) => {
       <View style={styles.stack}>
         <ReusableBtn
           onPress={handlePress}
-          btnText={"Masuk CILT PRO"}
+          btnText={"Enter Q-Eye!"}
           width={(SIZES.width - 50) / 2.2}
           backgroundColor={COLORS.red}
           borderColor={COLORS.red}

@@ -50,51 +50,58 @@ const Home = ({ navigation }) => {
     {
       id: 1,
       title: "LINE A",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/line.png"),
       link: "HomeQMS",
       line_fil: "Line A",
     },
     {
       id: 2,
       title: "LINE B",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/line.png"),
       link: "HomeQMS",
       line_fil: "Line B",
     },
     {
       id: 3,
       title: "LINE C",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/line.png"),
       link: "HomeQMS",
       line_fil: "Line C",
     },
     {
       id: 4,
       title: "LINE D",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/line.png"),
       link: "HomeQMS",
       line_fil: "Line D",
     },
     {
       id: 5,
       title: "LINE E",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/line.png"),
       link: "HomeQMS",
       line_fil: "Line E",
     },
     {
       id: 6,
       title: "LINE F",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/line.png"),
       link: "HomeQMS",
       line_fil: "Line F",
     },
     {
       id: 7,
       title: "LINE G",
-      image: require("../../assets/param.jpg"),
+      image: require("../../assets/line.png"),
       link: "HomeQMS",
       line_fil: "Line G",
+    },
+    {
+      id: 8,
+      title: "LINE H",
+      image: require("../../assets/line.png"),
+      link: "HomeQMS",
+      line_fil: "Line H",
     },
 
     // {
@@ -114,7 +121,7 @@ const Home = ({ navigation }) => {
 
   const fetchUserData = async () => {
     try {
-      const urlApi = process.env.URL;
+      const urlApi = process.env.URL4;
       // console.log(urlApi);
       const email = await AsyncStorage.getItem("user");
       const fcmToken = await AsyncStorage.getItem("fcmToken");
@@ -152,7 +159,7 @@ const Home = ({ navigation }) => {
       setUsername(data.username);
       setProfile(data.profile);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error username:", error);
     }
   };
 
@@ -160,6 +167,53 @@ const Home = ({ navigation }) => {
   useEffect(() => {
     fetchUserData();
     // console.log("width :", width, "height", height);
+  }, []);
+
+  useEffect(() => {
+    const checkDraftData = async () => {
+      try {
+        const apiUrl = process.env.URL;
+        const response = await fetch(`${apiUrl}/api/getdrafr`);
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // Ambil hanya draft yang belum selesai (Completed === "false")
+          const draftLines = [
+            ...new Set(
+              data
+                .filter(
+                  (item) =>
+                    item.Completed === "false" || item.Completed === false
+                )
+                .map((item) => item.Filler)
+            ),
+          ];
+
+          if (draftLines.length > 0) {
+            Alert.alert(
+              "Perhatian",
+              `Segera selesaikan draft yang masih tersimpan di line berikut:\n\n${draftLines.join(
+                ", "
+              )}`
+            );
+          }
+        } else {
+          Alert.alert(
+            "Warning",
+            "You are not connected to the office network. Please connect to use this feature."
+          );
+        }
+      } catch (error) {
+        console.error("Error checking draft data:", error);
+        Alert.alert(
+          "Error",
+          "Terjadi kesalahan saat memeriksa draft. Coba lagi nanti."
+        );
+      }
+    };
+
+    checkDraftData();
   }, []);
 
   return (
@@ -375,12 +429,12 @@ const styles = StyleSheet.create({
   icon: {
     position: "absolute",
     top: -20,
-    left: -140, // Ganti nilai ini sesuai kebutuhan agar icon terlihat
+    left: -110, // Ganti nilai ini sesuai kebutuhan agar icon terlihat
     width: "130%",
     height: "130%",
   },
   user: {
-    top: 250,
+    top: 300,
     width: 309,
     height: 68,
     borderRadius: Border.br_3xs,

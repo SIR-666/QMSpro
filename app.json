@@ -13,8 +13,6 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      // "deploymentTarget": "13.0",
-      // "flipper": true,
       "supportsTablet": true,
       "bundleIdentifier": "com.greenfields.ciltpro"
     },
@@ -23,7 +21,6 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/ciltproicon2.png",
         "backgroundColor": "#f1f1f1"
-        // "googleServiceFile": "process.env.GOOGLE_SERVICES_JSON"
       },
       "config": {
         "googleMaps": {
@@ -40,7 +37,10 @@
         "expo-build-properties",
         {
           "android": {
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": true,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 21
           }
         }
       ],

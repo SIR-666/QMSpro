@@ -22,15 +22,10 @@ import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ReusableOfflineUploadImage } from "../../components";
 import ReusableDatetime2 from "../../components/Reusable/ReusableDatetime2";
+import TimeOnlyPicker from "../../components/Reusable/ReusableDatetime5";
 import ReusableDatetime from "../../components/Reusable/ReusableDatetime3";
 import { COLORS } from "../../constants/theme";
 import URL from "../../components/url";
-import { formatDateToJakarta } from "../../components/Reusable/FormatDate";
-import { masterGroupOptions } from "../../components/mastergroup";
-
-// Define uploadImageToServer function here
-// Image upload function
-// Image upload function with improved error handling
 
 // Get shift by hour
 const getShiftByHour = (hour) => {
@@ -44,17 +39,23 @@ const getShiftByHour = (hour) => {
   return "Unknown Shift";
 };
 
-const Paraminspection2 = ({ route, navigation }) => {
-  const { username, line_fil: initialLine } = route.params;
+const ParaminspectionDraft = ({ route, navigation }) => {
+  const {
+    username,
+    sku_fill: sku_id,
+    filler: Line,
+    input_date: input_id,
+    dataAll: inputAll,
+  } = route.params;
   const [processOrder, setProcessOrder] = useState("#Plant_Line_SKU");
   const [packageType, setPackageType] = useState("");
   const [plant, setPlant] = useState("");
   const [line, setLine] = useState("");
   const [date, setDate] = useState(new Date());
-  const [proddate, setProdDate] = useState(null);
-  const [exdate, setExDate] = useState(null);
+  const [proddate, setProdDate] = useState(new Date());
+  const [exdate, setExDate] = useState(new Date());
 
-  console.log("line :", initialLine);
+  console.log("input_id :", input_id);
 
   const [productType, setProductType] = useState(""); // ESL atau UHT
   const [productOptions, setProductOptions] = useState([]);
@@ -76,8 +77,8 @@ const Paraminspection2 = ({ route, navigation }) => {
   const [selectedProduct, setSelectedProduct] = useState("");
   const [loadingDataInput, setloadingDataInput] = useState(true);
   const [batchNumber, setBatchNumber] = useState("");
-  const [startProd, setStartProd] = useState(null);
-  const [endProd, setEndProd] = useState(null);
+  const [startProd, setStartProd] = useState(new Date());
+  const [endProd, setEndProd] = useState(new Date());
   const [isValidGNR, setisValidGNR] = useState(false);
   const [timeinput, setTimeinput] = useState(new Date());
   const [isSelected, setIsSelected] = useState([]);
@@ -86,22 +87,32 @@ const Paraminspection2 = ({ route, navigation }) => {
   const [shift, setShift] = useState(
     getShiftByHour(moment(new Date()).tz("Asia/Jakarta").format("HH"))
   );
-  const [selGroup, setselGroup] = useState("");
-
-  // console.log("time input :", formatDateToJakarta(timeinput));
 
   const [prodverif, setProdverif] = useState(false);
 
-  const lineOptions = [
-    "Line A",
-    "Line B",
-    "Line C",
-    "Line D",
-    "Line E",
-    "Line F",
-    "Line G",
-    "Line H",
-  ];
+  const loadDraftData = (draftData) => {
+    if (!draftData || draftData.length === 0) return;
+
+    const parsedDraft = JSON.parse(draftData[0].Parameter_Input);
+
+    const updatedInspectionData = inspectionData.map((item) => {
+      const draftItem = parsedDraft.find((d) => d.parameter === item.parameter);
+
+      if (!draftItem) return item; // kalau ga ada draft skip
+
+      return {
+        ...item,
+        gnr: draftItem.gnr || "",
+        remarks: draftItem.remarks || "",
+        results:
+          draftItem.results && typeof draftItem.results === "object"
+            ? draftItem.results
+            : draftItem.results || {},
+      };
+    });
+
+    setInspectionData(updatedInspectionData);
+  };
 
   const getProductType = (selectedLine) => {
     const eslLines = ["Line A", "Line B", "Line C", "Line D"];
@@ -122,34 +133,39 @@ const Paraminspection2 = ({ route, navigation }) => {
     }
   };
 
-  const handleLineChange = (selectedLine) => {
-    setLine(selectedLine);
-    const type = getProductType(selectedLine);
-    setProductType(type);
-    fetchProductOptions(type);
-    // console.log("type", selectedLine);
+  const fetchDraft = async () => {
+    try {
+      // const response = await fetch(
+      //   "http://10.0.2.2:5002/api/getdraf-details/2025-05-03%2009:00:34.103"
+      // );
+      const response = await fetch(
+        "http://10.24.0.82:5008/api/getdraf-details/2025-05-03%2009:00:34.103"
+      );
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        loadDraftData(data);
+      }
+    } catch (error) {
+      console.error("Failed fetch draft", error);
+    }
   };
 
   useEffect(() => {
-    if (initialLine) {
-      console.log("initial line:", initialLine);
-      setLine(initialLine);
-      const type = getProductType(initialLine);
-      setProductType(type);
-      fetchProductOptions(type);
-    }
-  }, [initialLine]);
+    fetchInspectionData(sku_id);
+    // fetchDraft();
+  }, [sku_id]);
 
   const CheckProdverif = async (selectedProd) => {
     try {
-      // Alert.alert(selectedProd);
+      Alert.alert(selectedProd);
       const existingData = await AsyncStorage.getItem("ProdVerif");
-      console.log("data varian :", existingData);
-      // console.log("data varian select :", selectedProd);
+
       if (selectedProd === existingData) {
         setProdverif(false);
-        console.log("prodverif false");
       } else {
+        await AsyncStorage.setItem("ProdVerif", selectedProd);
+
         setProdverif(true);
       }
     } catch (storageError) {
@@ -157,143 +173,39 @@ const Paraminspection2 = ({ route, navigation }) => {
     }
   };
 
-  const HandleselectBatch = (Value) => {
-    setBatchNumber(Value);
-    // console.log("bact number :", Value);
-  };
+  // useEffect(async () => {
+  //   try {
+  //     console.log("shift:", shift);
+  //     const existingData = await AsyncStorage.getItem("shift");
+  //     if (shift === existingData) {
+  //       setProdverif(false);
+  //     } else {
+  //       await AsyncStorage.setItem("shift", shift);
+  //       setProdverif(true);
+  //     }
+  //   } catch (storageError) {
+  //     console.error("Failed saving to AsyncStorage:", storageError);
+  //   }
+  // }, [shift]);
 
-  const setSelectedGroup = (Value) => {
-    console.log("selected group:", Value);
-    setselGroup(Value);
-  };
-
-  const handlesubmitverif = async () => {
-    try {
-      await AsyncStorage.setItem("ProdVerif", selectedProduct);
-
-      fetchverifinputed({
-        batchNumber,
-        selectedProduct,
-        productionDate: proddate?.toISOString?.(),
-        expiredDate:
-          exdate instanceof Date && !isNaN(exdate)
-            ? exdate.toISOString()
-            : null,
-        line,
-        startProduction: startProd?.toISOString?.(),
-        endProduction: endProd?.toISOString?.(),
-        selectedProduct,
-        isValidGNR: String(isValidGNR),
-      });
-      setProdverif(false);
-    } catch (storageError) {
-      console.error("Failed saving to AsyncStorage:", storageError);
-    }
-  };
-
-  useEffect(() => {
-    const checkShift = async () => {
-      try {
-        console.log("shift:", shift);
-        const existingData = await AsyncStorage.getItem("shift");
-        if (shift === existingData) {
-          // setProdverif(false);
-        } else {
-          await AsyncStorage.setItem("shift", shift);
-          setProdverif(true);
-        }
-      } catch (storageError) {
-        console.error("Failed saving to AsyncStorage:", storageError);
-      }
-    };
-
-    checkShift();
-  }, [shift]);
-
-  const handleprodChange = async (selectedProd, label) => {
-    console.log("data varian select :", label);
-
+  const handleprodChange = (selectedProd, label) => {
+    // setLine(selectedLine);
+    // const type = getProductType(selectedLine);
     CheckProdverif(label);
     setProductSize(selectedProd);
     setSelectedProduct(label);
     fetchInspectionData(selectedProd);
-
-    try {
-      await AsyncStorage.setItem("prodname", label);
-      await AsyncStorage.setItem("prodsize", selectedProd);
-    } catch (error) {
-      console.error("Failed to save prodname to AsyncStorage:", error);
-    }
   };
 
-  useEffect(() => {
-    const saveProdDate = async () => {
-      try {
-        await AsyncStorage.setItem("proddate", proddate.toISOString());
-      } catch (e) {
-        console.error("Gagal menyimpan production date:", e);
-      }
-    };
-
-    if (proddate) {
-      saveProdDate();
-    }
-  }, [proddate]);
-
-  useEffect(() => {
-    const saveProdDate = async () => {
-      try {
-        await AsyncStorage.setItem("exdate", exdate.toISOString());
-      } catch (e) {
-        console.error("Gagal menyimpan production date:", e);
-      }
-    };
-
-    if (exdate) {
-      saveProdDate();
-    }
-  }, [exdate]);
-
-  useEffect(() => {
-    const saveProdDate = async () => {
-      try {
-        await AsyncStorage.setItem("startProd", startProd.toISOString());
-      } catch (e) {
-        console.error("Gagal menyimpan startProd:", e);
-      }
-    };
-
-    if (startProd) {
-      saveProdDate();
-    }
-  }, [startProd]);
-
-  useEffect(() => {
-    const saveProdDate = async () => {
-      try {
-        await AsyncStorage.setItem("endProd", endProd.toISOString());
-      } catch (e) {
-        console.error("Gagal menyimpan endProd:", e);
-      }
-
-      const stored = await AsyncStorage.getItem("endProd");
-      console.log("endProd storage: ", stored);
-    };
-
-    if (endProd) {
-      saveProdDate();
-    }
-  }, [endProd]);
-
-  useEffect(() => {
-    // Lock the screen orientation to portrait
-    const lockOrientation = async () => {
-      await ScreenOrientation.lockAsync(
-        ScreenOrientation.OrientationLock.PORTRAIT
-      );
-    };
-    lockOrientation();
-  }, []);
+  // useEffect(() => {
+  //   // Lock the screen orientation to portrait
+  //   const lockOrientation = async () => {
+  //     await ScreenOrientation.lockAsync(
+  //       ScreenOrientation.OrientationLock.PORTRAIT
+  //     );
+  //   };
+  //   lockOrientation();
+  // }, []);
 
   useEffect(() => {
     const allGNRFilled =
@@ -322,7 +234,7 @@ const Paraminspection2 = ({ route, navigation }) => {
   //   const updatedData = [...inspectionData];
   //   const currentItem = updatedData[index];
 
-  //   if (inspectionData[index].warning != null && column === "Reject") {
+  //   if (inspectionData[index].warning != null) {
   //     console.log(inspectionData[index].warning);
   //     setModalVisible(true);
   //     setWarningitem(inspectionData[index].warning);
@@ -466,73 +378,12 @@ const Paraminspection2 = ({ route, navigation }) => {
 
   //   setInspectionData(updatedData);
   // };
-  useEffect(() => {
-    const loadSelectedProduct = async () => {
-      const storedProd = await AsyncStorage.getItem("prodname");
 
-      if (storedProd) {
-        setSelectedProduct(storedProd);
-      }
-    };
-
-    const loadProdDate = async () => {
-      const storedProddate = await AsyncStorage.getItem("proddate");
-      console.log("proddate: ", storedProddate);
-      if (storedProddate) {
-        const parsedDate = new Date(storedProddate);
-        if (!isNaN(parsedDate)) {
-          setProdDate(parsedDate);
-        }
-      }
-    };
-
-    const loadexDate = async () => {
-      const storedProddate = await AsyncStorage.getItem("exdate");
-      console.log("exdate: ", storedProddate);
-
-      if (!isNaN(storedProddate)) {
-        setExDate(new Date(storedProddate)); // ubah string jadi Date
-      }
-    };
-
-    const loadstartProd = async () => {
-      const storedstartProd = await AsyncStorage.getItem("startProd");
-      console.log("startProd: ", storedstartProd);
-
-      const parsedDate = new Date(storedstartProd);
-      if (storedstartProd && !isNaN(parsedDate.getTime())) {
-        setStartProd(parsedDate);
-      }
-    };
-
-    const loadendProd = async () => {
-      const stored = await AsyncStorage.getItem("endProd");
-      console.log("endProd (raw): ", stored);
-
-      const parsedDate = new Date(stored);
-      if (stored && !isNaN(parsedDate.getTime())) {
-        setEndProd(parsedDate);
-      }
-    };
-
-    const loadSelectedProdSize = async () => {
-      const storedProdSize = await AsyncStorage.getItem("prodsize");
-      fetchInspectionData(storedProdSize);
-      if (storedProdSize) {
-        setProductSize(storedProdSize);
-      }
-    };
-
-    loadendProd();
-    loadstartProd();
-    loadexDate();
-    loadProdDate();
-    loadSelectedProdSize();
-    loadSelectedProduct();
-
-    console.log("startProd in UI:", startProd);
-    console.log("endProd in UI:", endProd);
-  }, []);
+  // useEffect(() => {
+  //   if (inputAll?.Batch_Number) {
+  //     setBatchNumber(String(inputAll.Batch_Number));
+  //   }
+  // }, [inputAll]);
 
   const handleGNRChange = (value, index) => {
     const updatedData = [...inspectionData];
@@ -552,21 +403,63 @@ const Paraminspection2 = ({ route, navigation }) => {
     setInspectionData(updatedData);
   };
 
+  const HandleselectBatch = (Value) => {
+    setBatchNumber(Value);
+    // console.log("bact number :", Value);
+  };
   const fetchInspectionData = async (selectedProduct) => {
-    setIsLoading(true); // Start loading animation
-    // setInspectionData([]); // Reset inspection data before fetching new data
+    setIsLoading(true);
 
     try {
       // const response = await axios.get(
       //   `http://10.0.2.2:5002/api/getlistparma/${selectedProduct}`
       // );
+
+      // const draftResponse = await fetch(
+      //   `http://10.0.2.2:5002/api/getdraf-details/${input_id}`
+      // );
+
       const response = await axios.get(
         `http://10.24.0.82:5008/api/getlistparma/${selectedProduct}`
       );
 
-      if (!response.data || !Array.isArray(response.data)) {
-        throw new Error("Invalid response format");
-      }
+      const draftResponse = await fetch(
+        `http://10.24.0.82:5008/api/getdraf-details/${input_id}`
+      );
+
+      // ===> DISINI TARUHNYA (setelah data berhasil diformat)
+
+      setProdDate(
+        inputAll?.Production_Date
+          ? new Date(inputAll.Production_Date)
+          : new Date()
+      );
+
+      setExDate(
+        inputAll?.Expiry_Date ? new Date(inputAll.Expiry_Date) : new Date()
+      );
+
+      setStartProd(
+        inputAll?.Start_Production
+          ? new Date(inputAll.Start_Production)
+          : new Date()
+      );
+
+      setEndProd(
+        inputAll?.Last_Production
+          ? new Date(inputAll.Last_Production)
+          : new Date()
+      );
+
+      const draftData = await draftResponse.json();
+
+      // const batchNumbers = draftData.map((item) => item.Batch_Number);
+      console.log("draft data :", draftData[0].Batch_Number);
+      setBatchNumber(draftData[0].Batch_Number);
+      const parsedDraft =
+        draftData && draftData.length > 0
+          ? JSON.parse(draftData[0].Parameter_Input)
+          : [];
 
       const formattedData = response.data.map((item) => {
         let parsedGood = {};
@@ -574,7 +467,6 @@ const Paraminspection2 = ({ route, navigation }) => {
         let parsedReject = {};
         try {
           parsedGood = JSON.parse(item.Good);
-          // console.log(parsedGood);
           if (typeof parsedGood !== "object" || Array.isArray(parsedGood)) {
             parsedGood = {};
           }
@@ -600,12 +492,16 @@ const Paraminspection2 = ({ route, navigation }) => {
           parsedReject = {};
         }
 
+        const draftItem = parsedDraft.find(
+          (d) => d.parameter === item.Parameter
+        );
+
         return {
           code: item.Code,
           variant: item.Variant,
           parameter: item.Parameter,
-          good: item.Good, // keep raw for display
-          parsedGood, // for rendering checklist
+          good: item.Good,
+          parsedGood,
           parsedNeed,
           parsedReject,
           need: item.Need,
@@ -620,17 +516,21 @@ const Paraminspection2 = ({ route, navigation }) => {
           filler: item.Filler,
           satuan: item.Satuan,
           warning: item.Warning,
-          gnr: "", // default value
-          results: item.Satuan !== null ? "" : {}, // default sesuai jenis input
+          gnr: draftItem?.gnr || "",
+          results:
+            draftItem?.results && typeof draftItem?.results === "object"
+              ? draftItem.results
+              : draftItem?.results || (item.Satuan !== null ? "" : {}),
+          remarks: draftItem?.remarks || "",
         };
       });
 
-      // console.log(formattedData);
       setInspectionData(formattedData);
     } catch (error) {
       console.error("Error fetching inspection data parameter:", error);
     } finally {
-      setIsLoading(false); // Stop loading animation
+      setIsLoading(false);
+      setloadingDataInput(false);
     }
   };
 
@@ -761,128 +661,24 @@ const Paraminspection2 = ({ route, navigation }) => {
     });
   };
 
-  const fetchverifinputed = async (commonData) => {
-    const checklistJson = {};
-
-    isSelected.forEach((item) => {
-      checklistJson[item] = true;
-    });
-
-    const jsonString = JSON.stringify(checklistJson);
-
-    const payloadverif = {
-      bact_number: batchNumber || null,
-      variant: productType,
-      param: JSON.stringify(checklistJson), // Pastikan ini format yang sesuai
-      prod: selectedProduct,
-      production_date: commonData.productionDate || null,
-      expiry_date: commonData.expiredDate || null,
-      input_at: formatDateToJakarta(timeinput),
-      filler: line || null,
-      start_production: formatDateToJakarta(commonData.startProduction) || null,
-      last_production: formatDateToJakarta(commonData.endProduction) || null,
-      product_size: productsize || null,
-      completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
-    };
-
-    console.log("verif data:", payloadverif);
-    // const response = await fetch("http://10.0.2.2:5002/api/post-verif", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(payloadverif),
-    // });
-
-    const response = await fetch("http://10.24.0.82:5008/api/post-verif", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payloadverif),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Gagal submit:", data.message);
-      Alert.alert("Failed!", "Gagal submit:", data.message);
-    } else {
-      Alert.alert("Success!", "success, updated data!!!!");
-      // await AsyncStorage.setItem("ProdVerif", selectedProduct);
-    }
-  };
-
   const fetchParameterInputed = async (inspectionResults, commonData) => {
     try {
       console.log(commonData);
       const payload = {
         bact_number: batchNumber || null,
-        variant: productType,
         param: JSON.stringify(inspectionResults), // Pastikan ini format yang sesuai
-        prod: selectedProduct,
+        prod: inputAll.Product_Name,
         production_date: commonData.productionDate || null,
         expiry_date: commonData.expiredDate || null,
-        input_at: formatDateToJakarta(timeinput),
-        filler: line || null,
-        start_production:
-          formatDateToJakarta(commonData.startProduction) || null,
-        last_production: formatDateToJakarta(commonData.endProduction) || null,
-        product_size: productsize || null,
+        input_at: inputAll.Input_At || null,
+        filler: inputAll.Filler || null,
+        start_production: commonData.startProduction || null,
+        last_production: commonData.endProduction || null,
+        product_size: inputAll.Product_Size || null,
         completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
-        group: selGroup,
       };
-      const checklistJson = {};
-      // if (prodverif === true) {
-      //   isSelected.forEach((item) => {
-      //     checklistJson[item] = true;
-      //   });
 
-      //   const jsonString = JSON.stringify(checklistJson);
-
-      //   const payloadverif = {
-      //     bact_number: commonData.bact_number || null,
-      //     variant: productType,
-      //     param: JSON.stringify(checklistJson), // Pastikan ini format yang sesuai
-      //     prod: selectedProduct,
-      //     production_date: commonData.productionDate || null,
-      //     expiry_date: commonData.expiredDate || null,
-      //     input_at: formatDateToJakarta(timeinput),
-      //     filler: line || null,
-      //     start_production:
-      //       formatDateToJakarta(commonData.startProduction) || null,
-      //     last_production:
-      //       formatDateToJakarta(commonData.endProduction) || null,
-      //     product_size: productsize || null,
-      //     completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
-      //   };
-
-      //   // const response = await fetch("http://10.0.2.2:5002/api/post-verif", {
-      //   //   method: "POST",
-      //   //   headers: {
-      //   //     "Content-Type": "application/json",
-      //   //   },
-      //   //   body: JSON.stringify(payloadverif),
-      //   // });
-
-      //   const response = await fetch("http://10.24.0.82:5008/api/post-verif", {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(payloadverif),
-      //   });
-
-      //   const data = await response.json();
-
-      //   if (!response.ok) {
-      //     console.error("Gagal submit:", data.message);
-      //   } else {
-      //     // await AsyncStorage.setItem("ProdVerif", selectedProduct);
-      //   }
-      // }
-
-      // const response = await fetch("http://10.0.2.2:5002/api/post-param", {
+      // const response = await fetch("http://10.0.2.2:5002/api/update-param", {
       //   method: "POST",
       //   headers: {
       //     "Content-Type": "application/json",
@@ -890,7 +686,7 @@ const Paraminspection2 = ({ route, navigation }) => {
       //   body: JSON.stringify(payload),
       // });
 
-      const response = await fetch("http://10.24.0.82:5008/api/post-param", {
+      const response = await fetch("http://10.24.0.82:5008/api/update-param", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -903,10 +699,7 @@ const Paraminspection2 = ({ route, navigation }) => {
       if (!response.ok) {
         console.error("Gagal submit:", data.message);
       } else {
-        console.log("Berhasil submit:", data.message);
-        clearAllInputs();
-        // Alert.alert("Warning!", "Failed, duplicate data!!!!");
-        // await AsyncStorage.setItem("ProdVerif", selectedProduct);
+        console.log("Berhasil submit:");
       }
     } catch (error) {
       console.error("Terjadi kesalahan saat kirim data QC:", error);
@@ -929,72 +722,62 @@ const Paraminspection2 = ({ route, navigation }) => {
       completed = false;
     }
 
-    if (!selGroup) {
-      Alert.alert("Grpup Wajib", "Silakan isi semua pilihan .");
+    const submit = () => {
+      const inspectionResults = inspectionData.map((item) => {
+        let resultsOutput = {};
+
+        if (item.satuan !== null) {
+          // Input numerik
+          resultsOutput = item.results;
+        } else if (item.gnr === "Need" || item.gnr === "Reject") {
+          resultsOutput = {};
+          Object.entries(item.results || {}).forEach(([key, val]) => {
+            if (key === "OthersNote") {
+              resultsOutput["OthersNote"] = val;
+            } else {
+              resultsOutput[key] = val === true;
+            }
+          });
+        }
+
+        return {
+          parameter: item.parameter,
+          gnr: item.gnr,
+          results: resultsOutput,
+          remarks: item.remarks || "",
+        };
+      });
+
+      fetchParameterInputed(inspectionResults, {
+        batchNumber,
+        productionDate: proddate?.toISOString?.(),
+        expiredDate: exdate?.toISOString?.(),
+        line,
+        startProduction: startProd?.toISOString?.(),
+        endProduction: endProd?.toISOString?.(),
+        isValidGNR: String(isValidGNR),
+      });
+    };
+
+    // Jika status 0, munculkan konfirmasi terlebih dahulu
+    if (status === 0) {
+      Alert.alert(
+        "Konfirmasi Submit",
+        "Apakah Anda yakin ingin submit data ini?",
+        [
+          {
+            text: "Batal",
+            style: "cancel",
+          },
+          {
+            text: "Yakin",
+            onPress: submit,
+          },
+        ]
+      );
     } else {
-      const submit = () => {
-        const inspectionResults = inspectionData.map((item) => {
-          let resultsOutput = {};
-
-          if (item.satuan !== null) {
-            // Input numerik
-            resultsOutput = item.results;
-          } else if (item.gnr === "Need" || item.gnr === "Reject") {
-            resultsOutput = {};
-            Object.entries(item.results || {}).forEach(([key, val]) => {
-              if (key === "OthersNote") {
-                resultsOutput["OthersNote"] = val;
-              } else {
-                resultsOutput[key] = val === true;
-              }
-            });
-          }
-
-          return {
-            parameter: item.parameter,
-            gnr: item.gnr,
-            results: resultsOutput,
-            remarks: item.remarks || "",
-          };
-        });
-
-        fetchParameterInputed(inspectionResults, {
-          batchNumber,
-          selectedProduct,
-          productionDate: proddate?.toISOString?.(),
-          expiredDate:
-            exdate instanceof Date && !isNaN(exdate)
-              ? exdate.toISOString()
-              : null,
-
-          line,
-          startProduction: startProd?.toISOString?.(),
-          endProduction: endProd?.toISOString?.(),
-          selectedProduct,
-          isValidGNR: String(isValidGNR),
-        });
-      };
-
-      // Jika status 0, munculkan konfirmasi terlebih dahulu
-      if (status === 0) {
-        Alert.alert(
-          "Konfirmasi Submit",
-          "Apakah Anda yakin ingin submit data ini?",
-          [
-            {
-              text: "Batal",
-              style: "cancel",
-            },
-            {
-              text: "Yakin",
-              onPress: submit,
-            },
-          ]
-        );
-      } else {
-        submit();
-        Alert.alert("Draft", "Parameter input akan disimpan di draft");
-      }
+      submit();
+      Alert.alert("Draft", "Parameter input akan disimpan di draft");
     }
   };
 
@@ -1038,17 +821,6 @@ const Paraminspection2 = ({ route, navigation }) => {
     }
   };
 
-  const clearAllInputs = () => {
-    const clearedData = inspectionData.map((item) => ({
-      ...item,
-      results: item.satuan !== null ? "" : {}, // empty string for input, empty object for checklist
-      remarks: "",
-      gnr: null,
-      photo: null, // if you have photo input
-    }));
-    setInspectionData(clearedData);
-  };
-
   // console.log(isSelected);
   return (
     <SafeAreaView style={styles.container}>
@@ -1085,180 +857,6 @@ const Paraminspection2 = ({ route, navigation }) => {
         </TouchableOpacity>
 
         <Text style={styles.title}>Input Parameter Quality</Text>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Batch Number</Text>
-          <View style={styles.dropdownContainer}>
-            <MaterialCommunityIcons
-              name="numeric"
-              size={20}
-              color={COLORS.lightBlue}
-            />
-            <TextInput
-              style={styles.input2}
-              onChangeText={(text) => HandleselectBatch(text)}
-              value={batchNumber}
-              // value={processOrder}
-              // editable={true}
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Filler *</Text>
-            <View style={styles.dropdownContainer}>
-              <MaterialCommunityIcons
-                name="line-scan"
-                size={24}
-                color={COLORS.lightBlue}
-              />
-
-              <Picker
-                selectedValue={line}
-                style={styles.dropdown}
-                onValueChange={handleLineChange}
-                enabled={false} // disable input
-              >
-                <Picker.Item label={line || "Select Line"} value={line} />
-              </Picker>
-            </View>
-          </View>
-
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Product Order *</Text>
-            <View style={styles.dropdownContainer}>
-              <MaterialCommunityIcons
-                name="identifier"
-                size={24}
-                color={COLORS.lightBlue}
-              />
-              {/* <Picker
-                selectedValue={String(productsize)} // pastikan string
-                style={styles.dropdown}
-                onValueChange={(value) => {
-                  const selectedItem = productOptions.find(
-                    (item) => String(item.Type) === String(value)
-                  );
-                  const selectedLabel = selectedItem?.Prod || "";
-                  handleprodChange(value, selectedLabel);
-                }}
-                enabled={productOptions.length > 0}
-              >
-                <Picker.Item label="Select Product" value="" />
-                {productOptions.map((product, index) => (
-                  <Picker.Item
-                    key={index}
-                    label={product.Prod}
-                    value={String(product.Type)} // pastikan string
-                  />
-                ))}
-              </Picker> */}
-              <Picker
-                selectedValue={selectedProduct}
-                style={styles.dropdown}
-                onValueChange={(value) => {
-                  const selectedItem = productOptions.find(
-                    (item) => String(item.Prod) === String(value)
-                  );
-
-                  if (selectedItem) {
-                    handleprodChange(selectedItem.Type, selectedItem.Prod); // Simpan Type & Prod
-                  } else {
-                    handleprodChange("", "");
-                  }
-                }}
-                enabled={productOptions.length > 0}
-              >
-                <Picker.Item label="Select Product" value="" />
-                {productOptions.map((product, index) => (
-                  <Picker.Item
-                    key={index}
-                    label={String(product.Prod)} // Ditampilkan ke user
-                    value={String(product.Prod)} // Value yang dikirim
-                  />
-                ))}
-              </Picker>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          {/* Select Date and Select Time */}
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Production Date*</Text>
-            <View style={styles.dropdownContainer}>
-              <ReusableDatetime
-                date={proddate instanceof Date ? proddate : new Date()}
-                setDate={setProdDate}
-              />
-            </View>
-          </View>
-
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Expiry Date *</Text>
-            <View style={styles.dropdownContainer}>
-              {/* <ReusableDatetime
-                    date={date}
-                    setDate={setDate}
-                    setShift={setShift}
-                    getShiftByHour={getShiftByHour}
-                  /> */}
-              <ReusableDatetime date={exdate} setDate={setExDate} />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          {/* Select Date and Select Time */}
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Start Production*</Text>
-            <View style={styles.dropdownContainer}>
-              <ReusableDatetime2 date={startProd} setDate={setStartProd} />
-            </View>
-          </View>
-
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Last Production *</Text>
-            <View style={styles.dropdownContainer}>
-              <ReusableDatetime2 date={endProd} setDate={setEndProd} />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          {/* Select Date and Select Time */}
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Time Input</Text>
-            <View style={styles.dropdownContainer}>
-              <ReusableDatetime2 date={timeinput} setDate={setTimeinput} />
-            </View>
-          </View>
-
-          <View style={styles.halfInputGroup}>
-            <Text style={styles.label}>Select Group *</Text>
-            <View style={styles.dropdownContainer}>
-              <MaterialCommunityIcons
-                name="account-group"
-                size={24}
-                color={COLORS.lightBlue}
-              />
-              <Picker
-                selectedValue={selGroup}
-                style={styles.dropdown}
-                onValueChange={(value) => setSelectedGroup(value)}
-              >
-                <Picker.Item label="Select Group" value="" />
-                {masterGroupOptions.map((group, index) => (
-                  <Picker.Item
-                    key={index}
-                    label={group.label}
-                    value={group.value}
-                  />
-                ))}
-              </Picker>
-            </View>
-          </View>
-        </View>
 
         {prodverif ? (
           <>
@@ -1341,16 +939,6 @@ const Paraminspection2 = ({ route, navigation }) => {
                 </View>
               </ScrollView>
             </View>
-            <>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.submitButton2]}
-                  onPress={() => handlesubmitverif()}
-                >
-                  <Text style={styles.submitButtonText}>SUBMIT</Text>
-                </TouchableOpacity>
-              </View>
-            </>
           </>
         ) : (
           <Text></Text>
@@ -1360,6 +948,62 @@ const Paraminspection2 = ({ route, navigation }) => {
           <ActivityIndicator size="large" color={COLORS.blue} />
         ) : (
           <>
+            <View style={styles.inputGroup}>
+              <Text style={styles.labelsub}>Batch Number</Text>
+              <View style={styles.dropdownContainer}>
+                <MaterialCommunityIcons
+                  name="numeric"
+                  size={20}
+                  color={COLORS.lightBlue}
+                />
+                <TextInput
+                  style={styles.input2}
+                  onChangeText={(text) => HandleselectBatch(text)}
+                  value={batchNumber}
+                  // editable={true}
+                />
+              </View>
+            </View>
+            <View style={styles.row}>
+              {/* Select Date and Select Time */}
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Production Date*</Text>
+                <View style={styles.dropdownContainer}>
+                  <ReusableDatetime date={proddate} setDate={setProdDate} />
+                </View>
+              </View>
+
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Expiry Date *</Text>
+                <View style={styles.dropdownContainer}>
+                  {/* <ReusableDatetime
+                    date={date}
+                    setDate={setDate}
+                    setShift={setShift}
+                    getShiftByHour={getShiftByHour}
+                  /> */}
+                  <ReusableDatetime date={exdate} setDate={setExDate} />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              {/* Select Date and Select Time */}
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Start Production*</Text>
+                <View style={styles.dropdownContainer}>
+                  <TimeOnlyPicker date={startProd} setDate={setStartProd} />
+                </View>
+              </View>
+
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Last Production *</Text>
+                <View style={styles.dropdownContainer}>
+                  <TimeOnlyPicker date={endProd} setDate={setEndProd} />
+                </View>
+              </View>
+            </View>
+
             <View style={styles.wrapper}>
               <Text style={styles.label}>PARAMETER INPUT</Text>
               <ScrollView style={styles.tableWrapper} horizontal>
@@ -1418,21 +1062,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                         {item.satuan !== null ? (
                           <TextInput
                             // placeholder={`Batas: ${item.good}`}
-                            // placeholder={
-                            //   item.parsedGood
-                            //     ? Object.keys(item.parsedGood)
-                            //         .map((key) => `- ${key}`)
-                            //         .join(", ")
-                            //     : "Fill Here First"
-                            // }
-                            placeholder={
-                              item.parsedGood
-                                ? JSON.stringify(item.parsedGood)
-                                    .replace(/[{}"]/g, "")
-                                    .replace(/:/g, " ")
-                                    .replace(/,/g, " & ")
-                                : "Fill Here First"
-                            }
+                            placeholder={`Fill Here First`}
                             style={[
                               styles.tableData2,
                               {
@@ -1492,14 +1122,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                         {item.satuan !== null ? (
                           <TextInput
                             // placeholder={`Batas: ${item.good}`}
-                            placeholder={
-                              item.parsedGood
-                                ? JSON.stringify(item.parsedNeed)
-                                    .replace(/[{}"]/g, "")
-                                    .replace(/:/g, " ")
-                                    .replace(/,/g, " & ")
-                                : "Fill Here First"
-                            }
+                            placeholder={`Fill Here First`}
                             style={[
                               styles.tableData2,
                               {
@@ -1574,14 +1197,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                         {item.satuan !== null ? (
                           <TextInput
                             // placeholder={`Batas: ${item.good}`}
-                            placeholder={
-                              item.parsedGood
-                                ? JSON.stringify(item.parsedReject)
-                                    .replace(/[{}"]/g, "")
-                                    .replace(/:/g, " ")
-                                    .replace(/,/g, " & ")
-                                : "Fill Here First"
-                            }
+                            placeholder={`Fill Here First`}
                             style={[
                               styles.tableData2,
                               {
@@ -1781,6 +1397,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    marginTop: 20,
+    marginBottom: 5,
+  },
+  labelsub: {
+    fontSize: 16,
+    marginTop: 20,
     marginBottom: 5,
   },
   labelmodal: {
@@ -1831,7 +1453,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   wrapper2: {
-    paddingBottom: 0,
+    paddingBottom: 30,
     justifyContent: "center",
     alignItems: "center",
     flex: 1,
@@ -1903,12 +1525,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   submitButton: {
-    backgroundColor: COLORS.blue,
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  submitButton2: {
     backgroundColor: COLORS.blue,
     padding: 15,
     borderRadius: 5,
@@ -1992,4 +1608,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Paraminspection2;
+export default ParaminspectionDraft;

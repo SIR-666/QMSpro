@@ -27,7 +27,7 @@ import { COLORS, SIZES, TEXT } from "../../constants/theme";
 
 const { width, height } = Dimensions.get("window");
 
-const QMSdraft = ({ navigation }) => {
+const QMSsubmited = ({ navigation }) => {
   const { userLogin, userData, isLoading, time } = checkUser();
 
   const [username, setUsername] = useState("");
@@ -41,7 +41,9 @@ const QMSdraft = ({ navigation }) => {
   const fetchDraft = async () => {
     try {
       // const response = await axios.get("http://10.0.2.2:5002/api/getdrafr");
-      const response = await axios.get("http://10.24.0.82:5008/api/getdrafr");
+      const response = await axios.get(
+        "http://10.24.0.82:5008/api/getsubmited"
+      );
       const data = response.data;
       // console.log(data);
       setDraft(data);
@@ -70,7 +72,7 @@ const QMSdraft = ({ navigation }) => {
       </View>
 
       <HeightSpacer height={20} />
-      <Text style={styles.headText}>DRAFT HISTORY</Text>
+      <Text style={styles.headText}>SUBMITED HISTORY</Text>
       <HeightSpacer height={10} />
       <SafeAreaProvider style={styles.containerdrop}>
         <ScrollView>
@@ -396,4 +398,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default QMSdraft;
+export default QMSsubmited;

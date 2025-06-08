@@ -118,6 +118,7 @@ const SampleQuantity = ({ route, navigation }) => {
   const [loadingDataInput, setloadingDataInput] = useState(true);
   const [batchNumber, setBatchNumber] = useState("");
   const [startProd, setStartProd] = useState(new Date());
+  const [tableData, setTableData] = useState([]);
 
   const lineOptions = [
     "Line A",
@@ -138,7 +139,8 @@ const SampleQuantity = ({ route, navigation }) => {
   const fetchProductOptions = async (type) => {
     try {
       console.log("type :", type);
-      const response = await fetch(`http://10.0.2.2:5002/api/sku/${type}`);
+      // const response = await fetch(`http://10.0.2.2:5002/api/sku/${type}`);
+      const response = await fetch(`http://10.24.0.82:5008/api/sku/${type}`);
       const data = await response.json();
       setloadingDataInput(false);
       setProductOptions(data);
@@ -147,6 +149,23 @@ const SampleQuantity = ({ route, navigation }) => {
       console.error("Failed to fetch products:", error);
     }
   };
+
+  useEffect(() => {
+    if (selectedProduct) {
+      fetch(
+        `http://10.24.0.82:5008/api/getqc-inputed/${initialLine}/${selectedProduct}/${proddate}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          const parsedData = data.map((item) => ({
+            timer: new Date(item.Timer),
+            ...JSON.parse(item.Data),
+          }));
+          setTableData(parsedData);
+        })
+        .catch((err) => console.error("Error fetching data:", err));
+    }
+  }, [selectedProduct, initialLine, proddate]);
 
   const handleLineChange = (selectedLine) => {
     setLine(selectedLine);
@@ -195,28 +214,33 @@ const SampleQuantity = ({ route, navigation }) => {
 
   const fetchParameterInputed = async (inspectionResults, commonData) => {
     try {
-      console.log(commonData);
       const payload = {
-        bact_number: commonData.bact_number || null,
+        bact_number: batchNumber || null,
         variant: productType,
-        param: JSON.stringify(inspectionResults), // Pastikan ini format yang sesuai
+        data: JSON.stringify(inspectionResults), // Pastikan ini format yang sesuai
         prod: selectedProduct,
+        timer: commonData.timer,
         production_date: commonData.productionDate || null,
         expiry_date: commonData.expiredDate || null,
         filler: line || null,
-        start_production: commonData.startProduction || null,
-        last_production: commonData.endProduction || null,
-        product_size: productsize || null,
-        completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
+        product_size: productsize || null, // Bisa disesuaikan jika ada status lain
       };
-
-      const response = await fetch("http://10.0.2.2:5002/api/post-param", {
+      console.log(payload);
+      const response = await fetch("http://10.24.0.82:5008/api/post-sample2", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
+
+      // const response = await fetch("http://10.24.0.82:5008/api/post-param", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
 
       const data = await response.json();
 
@@ -248,65 +272,35 @@ const SampleQuantity = ({ route, navigation }) => {
     //   completed = false;
     // }
 
-    // const submit = () => {
-    //   const inspectionResults = inspectionData.map((item) => {
-    //     let resultsOutput = {};
-
-    //     if (item.satuan !== null) {
-    //       // Input numerik
-    //       resultsOutput = item.results;
-    //     } else if (item.gnr === "Need" || item.gnr === "Reject") {
-    //       resultsOutput = {};
-    //       Object.entries(item.results || {}).forEach(([key, val]) => {
-    //         if (key === "OthersNote") {
-    //           resultsOutput["OthersNote"] = val;
-    //         } else {
-    //           resultsOutput[key] = val === true;
-    //         }
-    //       });
-    //     }
-
-    //     return {
-    //       parameter: item.parameter,
-    //       gnr: item.gnr,
-    //       results: resultsOutput,
-    //       remarks: item.remarks || "",
-    //     };
-    //   });
-
-    //   fetchParameterInputed(inspectionResults, {
-    //     batchNumber,
-    //     selectedProduct,
-    //     productionDate: proddate?.toISOString?.(),
-    //     expiredDate: exdate?.toISOString?.(),
-    //     line,
-    //     startProduction: startProd?.toISOString?.(),
-    //     endProduction: endProd?.toISOString?.(),
-    //     selectedProduct,
-    //     isValidGNR: String(isValidGNR),
-    //   });
-    // };
+    const submit = () => {
+      fetchParameterInputed(inspectionData, {
+        batchNumber,
+        selectedProduct,
+        productionDate: proddate?.toISOString?.(),
+        expiredDate: exdate?.toISOString?.(),
+        line,
+        timer: timer,
+        selectedProduct,
+      });
+    };
 
     // Jika status 0, munculkan konfirmasi terlebih dahulu
-    // if (status === 0) {
-    //   Alert.alert(
-    //     "Konfirmasi Submit",
-    //     "Apakah Anda yakin ingin submit data ini?",
-    //     [
-    //       {
-    //         text: "Batal",
-    //         style: "cancel",
-    //       },
-    //       {
-    //         text: "Yakin",
-    //         onPress: submit,
-    //       },
-    //     ]
-    //   );
-    // } else {
-    //   submit();
-    //   Alert.alert("Draft", "Parameter input akan disimpan di draft");
-    // }
+    if (status === 0) {
+      Alert.alert(
+        "Konfirmasi Submit",
+        "Apakah Anda yakin ingin submit data ini?",
+        [
+          {
+            text: "Batal",
+            style: "cancel",
+          },
+          {
+            text: "Yakin",
+            onPress: submit,
+          },
+        ]
+      );
+    }
   };
 
   // Save offline data when API submission fails
@@ -330,6 +324,11 @@ const SampleQuantity = ({ route, navigation }) => {
     }
   };
 
+  const HandleselectBatch = (Value) => {
+    setBatchNumber(Value);
+    // console.log("bact number :", Value);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -344,7 +343,8 @@ const SampleQuantity = ({ route, navigation }) => {
             />
             <TextInput
               style={styles.input2}
-              onChangeText={setBatchNumber}
+              onChangeText={(text) => HandleselectBatch(text)}
+              value={batchNumber}
               // value={processOrder}
               // editable={true}
             />
@@ -390,14 +390,18 @@ const SampleQuantity = ({ route, navigation }) => {
                 color={COLORS.lightBlue}
               />
               <Picker
-                selectedValue={productsize}
+                selectedValue={selectedProduct}
                 style={styles.dropdown}
                 onValueChange={(value) => {
                   const selectedItem = productOptions.find(
-                    (item) => item.Type === value
+                    (item) => String(item.Prod) === String(value)
                   );
-                  const selectedLabel = selectedItem?.Prod || "";
-                  handleprodChange(value, selectedLabel);
+
+                  if (selectedItem) {
+                    handleprodChange(selectedItem.Type, selectedItem.Prod); // Simpan Type & Prod
+                  } else {
+                    handleprodChange("", "");
+                  }
                 }}
                 enabled={productOptions.length > 0}
               >
@@ -405,8 +409,8 @@ const SampleQuantity = ({ route, navigation }) => {
                 {productOptions.map((product, index) => (
                   <Picker.Item
                     key={index}
-                    label={product.Prod}
-                    value={product.Type}
+                    label={String(product.Prod)} // Ditampilkan ke user
+                    value={String(product.Prod)} // Value yang dikirim
                   />
                 ))}
               </Picker>
@@ -441,101 +445,163 @@ const SampleQuantity = ({ route, navigation }) => {
         <>
           <Text style={styles.title2}>Sample</Text>
           <View style={styles.wrapper}>
-            {/* Table Container */}
-            <View style={styles.table}>
-              {/* Table Head */}
-              <View style={styles.tableHead}>
-                {/* Header Caption */}
-                {/* <View style={{ width: "10%" }}>
-                                <Text style={styles.tableCaption}>Done</Text>
-                              </View> */}
-                <View style={{ width: "20%" }}>
-                  <Text style={styles.tableCaption}>Timer</Text>
-                </View>
-                <View style={{ width: "20%" }}>
-                  <Text style={styles.tableCaption}>No. Carton</Text>
-                </View>
-                <View style={{ width: "12%" }}>
-                  <Text style={styles.tableCaption}>Start</Text>
-                </View>
-                <View style={{ width: "12%" }}>
-                  <Text style={styles.tableCaption}>Random</Text>
-                </View>
-                <View style={{ width: "12%" }}>
-                  <Text style={styles.tableCaption}>End</Text>
-                </View>
-                <View style={{ width: "12%" }}>
-                  <Text style={styles.tableCaption}>Keeping</Text>
-                </View>
-                <View style={{ width: "12%" }}>
-                  <Text style={styles.tableCaption}>Direct</Text>
-                </View>
-                {/* <View style={{ width: "20%" }}>
-                                <Text style={styles.tableCaption}>Picture</Text>
-                              </View> */}
-              </View>
-              {/* Table Body */}
-              <View style={[styles.tableBody]}>
-                <View style={{ width: "20%" }}>
-                  <ReusableDatetime3 date={timer} setDate={setTimer} />
-                </View>
-                <View style={{ width: "20%" }}>
-                  <TextInput
-                    placeholder="0"
-                    style={styles.tableData}
-                    keyboardType="numeric"
-                    // value={item.remarks || ""}
-                    onChangeText={(text) => handleFieldChange("carton", text)}
-                  />
-                </View>
-                <View style={{ width: "12%" }}>
-                  <TextInput
-                    placeholder="0"
-                    style={styles.tableData}
-                    keyboardType="numeric"
-                    // value={item.remarks || ""}
-                    onChangeText={(text) => handleFieldChange("start", text)}
-                  />
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={true}>
+              <View style={styles.table}>
+                {/* Table Head */}
+                <View style={styles.tableHead}>
+                  <View style={{ width: 120 }}>
+                    <Text style={styles.tableCaption}>Timer</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>No. Pallet</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>No. Carton</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>Start</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>Random</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>End</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>K4</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>K7</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>K21</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>K40</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>K50</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>K60</Text>
+                  </View>
+                  <View style={{ width: 100 }}>
+                    <Text style={styles.tableCaption}>Direct</Text>
+                  </View>
                 </View>
 
-                <View style={{ width: "12%" }}>
-                  <TextInput
-                    placeholder="0"
-                    style={styles.tableData}
-                    keyboardType="numeric"
-                    // value={item.remarks || ""}
-                    onChangeText={(text) => handleFieldChange("random", text)}
-                  />
-                </View>
-                <View style={{ width: "12%" }}>
-                  <TextInput
-                    placeholder="0"
-                    style={styles.tableData}
-                    keyboardType="numeric"
-                    // value={item.remarks || ""}
-                    onChangeText={(text) => handleFieldChange("end", text)}
-                  />
-                </View>
-                <View style={{ width: "12%" }}>
-                  <TextInput
-                    placeholder="0"
-                    style={styles.tableData}
-                    keyboardType="numeric"
-                    // value={item.remarks || ""}
-                    onChangeText={(text) => handleFieldChange("keeping", text)}
-                  />
-                </View>
-                <View style={{ width: "12%" }}>
-                  <TextInput
-                    placeholder="0"
-                    style={styles.tableData}
-                    keyboardType="numeric"
-                    // value={item.remarks || ""}
-                    onChangeText={(text) => handleFieldChange("direct", text)}
-                  />
+                {/* Table Body */}
+                <View style={styles.tableBody}>
+                  <View style={{ width: 100 }}>
+                    <ReusableDatetime3 date={timer} setDate={setTimer} />
+                  </View>
+                  <View style={{ width: 120 }}>
+                    <TextInput
+                      placeholder="0"
+                      style={styles.tableData}
+                      keyboardType="numeric"
+                      onChangeText={(text) => handleFieldChange("carton", text)}
+                    />
+                  </View>
+                  {[
+                    "start",
+                    "pallet",
+                    "random",
+                    "end",
+                    "k4",
+                    "k7",
+                    "k21",
+                    "k40",
+                    "k50",
+                    "k60",
+                    "direct",
+                  ].map((key) => (
+                    <View style={{ width: 100 }} key={key}>
+                      <TextInput
+                        placeholder="0"
+                        style={styles.tableData}
+                        keyboardType="numeric"
+                        onChangeText={(text) => handleFieldChange(key, text)}
+                      />
+                    </View>
+                  ))}
                 </View>
               </View>
-            </View>
+            </ScrollView>
+          </View>
+        </>
+
+        <HeightSpacer height={20} />
+        <>
+          <Text style={styles.title2}>History</Text>
+          <View style={styles.wrapper}>
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={true}>
+              <View style={styles.table2}>
+                {/* Table Head */}
+                <View style={styles.tableHead2}>
+                  {[
+                    "Timer",
+                    "No. Pallet",
+                    "No. Carton",
+                    "Start",
+                    "Random",
+                    "End",
+                    "K4",
+                    "K7",
+                    "K21",
+                    "K40",
+                    "K50",
+                    "K60",
+                    "Direct",
+                  ].map((label, index) => (
+                    <View key={index} style={styles.cell}>
+                      <Text style={styles.tableCaption}>{label}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Table Body */}
+                {tableData.map((row, index) => (
+                  <View key={index} style={styles.tableBody}>
+                    <View style={styles.cell}>
+                      <ReusableDatetime3 date={row.timer} setDate={() => {}} />
+                    </View>
+                    <View style={styles.cell}>
+                      <TextInput
+                        placeholder="0"
+                        style={styles.tableData2}
+                        keyboardType="numeric"
+                        value={row.carton}
+                        editable={false}
+                      />
+                    </View>
+                    {[
+                      "start",
+                      "pallet",
+                      "random",
+                      "end",
+                      "k4",
+                      "k7",
+                      "k21",
+                      "k40",
+                      "k50",
+                      "k60",
+                      "direct",
+                    ].map((key) => (
+                      <View key={key} style={styles.cell}>
+                        <TextInput
+                          placeholder="0"
+                          style={styles.tableData2}
+                          keyboardType="numeric"
+                          value={row[key]}
+                          editable={false}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
           </View>
         </>
 
@@ -645,12 +711,23 @@ const styles = StyleSheet.create({
   },
   table: {
     width: "100%", // Make table take the full width
-    margin: 15,
+    margin: 10,
+  },
+  table2: {
+    flexDirection: "column",
+    width: "100%",
+    flex: 1,
   },
   tableHead: {
     flexDirection: "row",
     backgroundColor: "#3bcd6b",
-    padding: 20,
+    paddingVertical: 20,
+    width: "100%",
+  },
+  tableHead2: {
+    flexDirection: "row",
+    backgroundColor: "#A6AEBF",
+    paddingVertical: 20,
     width: "100%",
   },
   tableBody: {
@@ -678,19 +755,26 @@ const styles = StyleSheet.create({
     textAlign: "left", // Center-align text in cells
   },
   tableData2: {
-    // color: "#fff",
-    // fontWeight: "bold",
-    fontSize: 16,
-    textAlign: "center", // Center-align text in cells
-    marginLeft: 10,
-    // width: "40%",
+    fontSize: 14,
+    textAlign: "center",
+    // borderWidth: 1,
+    borderColor: "#ccc",
+    paddingVertical: 4,
+    width: "100%",
   },
   centeredContent: {
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 10,
   },
-
+  cell: {
+    flexBasis: 0,
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 2,
+    width: 60,
+  },
   // tableCSS end
 
   checkboxContainer: {

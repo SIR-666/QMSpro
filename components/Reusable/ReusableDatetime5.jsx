@@ -1,51 +1,34 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/theme";
 
-const ReusableDatetime2 = ({ date, setDate }) => {
-  const [showDatePicker, setShowDatePicker] = useState(false);
+const TimeOnlyPicker = ({ date, setDate }) => {
   const [showTimePicker, setShowTimePicker] = useState(false);
-
   const currentDate = date || new Date();
-
-  const onChangeDate = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      const oldDate = date || new Date();
-      const updatedDate = new Date(selectedDate);
-      updatedDate.setHours(oldDate.getHours(), oldDate.getMinutes());
-      setDate(updatedDate);
-    }
-  };
 
   const onChangeTime = (event, selectedTime) => {
     setShowTimePicker(false);
     if (selectedTime) {
-      const oldDate = date || new Date();
-      const updatedDate = new Date(oldDate);
-      updatedDate.setHours(selectedTime.getHours(), selectedTime.getMinutes());
-      setDate(updatedDate);
+      const now = new Date();
+      if (selectedTime > now) {
+        const updatedDate = new Date(date || now);
+        updatedDate.setHours(now.getHours(), now.getMinutes());
+        setDate(updatedDate);
+      } else {
+        const updatedDate = new Date(date || new Date());
+        updatedDate.setHours(
+          selectedTime.getHours(),
+          selectedTime.getMinutes()
+        );
+        setDate(updatedDate);
+      }
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Pilih Tanggal */}
-      <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
-        style={styles.inputBox}
-      >
-        <MaterialCommunityIcons
-          name="calendar-range"
-          size={20}
-          color={COLORS.lightBlue}
-        />
-        <Text style={styles.text}>{currentDate.toLocaleDateString()}</Text>
-      </TouchableOpacity>
-
       {/* Pilih Jam */}
       <TouchableOpacity
         onPress={() => setShowTimePicker(true)}
@@ -60,22 +43,9 @@ const ReusableDatetime2 = ({ date, setDate }) => {
           {currentDate.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
-            hour12: false,
           })}
         </Text>
       </TouchableOpacity>
-
-      {/* Date Picker */}
-      {showDatePicker && (
-        <DateTimePicker
-          testID="datePicker"
-          value={currentDate}
-          mode="date"
-          is24Hour={true}
-          display="default"
-          onChange={onChangeDate}
-        />
-      )}
 
       {/* Time Picker */}
       {showTimePicker && (
@@ -110,4 +80,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReusableDatetime2;
+export default TimeOnlyPicker;

@@ -31,25 +31,23 @@ import AuthTopTab from "./navigation/AuthTopTab";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AddCard from "./screens/setttings/AddCard";
-import { StyleSheet, Text, View, Alert } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
+import { StyleSheet, Text, View, Alert } from "react-native";
+import messaging from "@react-native-firebase/messaging";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [firstLaunch, setFirstLaunch] = useState(true);
 
-    const requestPermmission = async () => {
-
+  const requestPermmission = async () => {
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     if (enabled) {
-      console.log('Authorization status:', authStatus);
+      console.log("Authorization status:", authStatus);
     }
-  }
-
+  };
 
   const appFirstLaunch = async () => {
     const onboarding = await AsyncStorage.getItem("first");
@@ -61,38 +59,46 @@ export default function App() {
   };
 
   useEffect(() => {
-    if(requestPermmission()){
+    if (requestPermmission()) {
       // return fcm token
-      messaging().getToken().then(token => {
-        console.log(token);
-      })
-    } else{
-      console.log('Failed Token', authStatus);
+      messaging()
+        .getToken()
+        .then((token) => {
+          console.log(token);
+        });
+    } else {
+      console.log("Failed Token", authStatus);
     }
 
     messaging()
       .getInitialNotification()
-      .then( async (remoteMessage) => {
-        if(remoteMessage){
-          console.log('Notificatio  app to open from quit state:', remoteMessage.notification); 
+      .then(async (remoteMessage) => {
+        if (remoteMessage) {
+          console.log(
+            "Notificatio  app to open from quit state:",
+            remoteMessage.notification
+          );
         }
       });
 
-      messaging().onNotificationOpenedApp( async (remoteMessage) => {
-        console.log('Notification caused app to open from background state', remoteMessage.notification);
-      });
+    messaging().onNotificationOpenedApp(async (remoteMessage) => {
+      console.log(
+        "Notification caused app to open from background state",
+        remoteMessage.notification
+      );
+    });
 
-      //register background handlerr
-      messaging().setBackgroundMessageHandler(async remoteMessage => {
-        console.log('Message handled in the background', remoteMessage)
-      })
+    //register background handlerr
+    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+      console.log("Message handled in the background", remoteMessage);
+    });
 
-      const unsubscribe = messaging().onMessage(async remoteMessage => {
-        const { title, body } = remoteMessage.notification;
-        Alert.alert(title, body);
-      });
-      return unsubscribe
-  }, []); 
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+      const { title, body } = remoteMessage.notification;
+      Alert.alert(title, body);
+    });
+    return unsubscribe;
+  }, []);
 
   const [fontsLoaded] = useFonts({
     regular: require("./assets/fonts/regular.otf"),
@@ -235,7 +241,6 @@ export default function App() {
   );
 }
 
-
 // import { StyleSheet, Text, View, Alert } from 'react-native';
 // import React, {useEffect} from 'react';
 // import messaging from '@react-native-firebase/messaging';
@@ -254,7 +259,6 @@ export default function App() {
 //     }
 //   }
 
-
 //   useEffect(() => {
 //     if(requestPermmission()){
 //       // return fcm token
@@ -269,15 +273,13 @@ export default function App() {
 //       .getInitialNotification()
 //       .then( async (remoteMessage) => {
 //         if(remoteMessage){
-//           console.log('Notificatio  app to open from quit state:', remoteMessage.notification); 
+//           console.log('Notificatio  app to open from quit state:', remoteMessage.notification);
 //         }
 //       });
-
 
 //       messaging().onNotificationOpenedApp( async (remoteMessage) => {
 //         console.log('Notification caused app to open from background state', remoteMessage.notification);
 //       });
-
 
 //       //register background handlerr
 //       messaging().setBackgroundMessageHandler(async remoteMessage => {
@@ -288,8 +290,7 @@ export default function App() {
 //         Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
 //       });
 //       return unsubscribe
-//   }, []); 
-
+//   }, []);
 
 //   return (
 //     <View style={styles.container}>
@@ -306,4 +307,3 @@ export default function App() {
 //     justifyContent: 'center',
 //   },
 // });
-

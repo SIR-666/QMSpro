@@ -130,7 +130,7 @@ const TopTab = ({ navigation }) => {
             // mode={"contain"}
           /> */}
           <AssetImage
-            data={require("../assets/images/bgLong.png")}
+            data={require("../assets/images/MS.png")}
             width={"100%"}
             height={270}
             mode={"contain"}
