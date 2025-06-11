@@ -4,29 +4,26 @@ import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import * as ScreenOrientation from "expo-screen-orientation";
 import moment from "moment-timezone";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Pressable,
-  Modal,
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ReusableOfflineUploadImage } from "../../components";
+import { formatDateToJakarta } from "../../components/Reusable/FormatDate";
 import ReusableDatetime2 from "../../components/Reusable/ReusableDatetime2";
 import ReusableDatetime from "../../components/Reusable/ReusableDatetime3";
-import { COLORS } from "../../constants/theme";
-import URL from "../../components/url";
-import { formatDateToJakarta } from "../../components/Reusable/FormatDate";
 import { masterGroupOptions } from "../../components/mastergroup";
+import { COLORS } from "../../constants/theme";
 
 // Define uploadImageToServer function here
 // Image upload function
@@ -910,21 +907,38 @@ const Paraminspection2 = ({ route, navigation }) => {
   // Submit form and handle image upload
   const handleSubmit = (status) => {
     // Format inspection rows
-    const isValidGNR = inspectionData.every((item) => item.gnr !== "");
+    const isValidGNR =
+      selectedItem === "1 Jam"
+        ? inspectionData.every((item) => item.gnr !== "")
+        : inspectionData.some((item) => item.gnr !== "");
+
     let completed;
 
-    if (!isValidGNR && selectedItem === "1 Jam") {
-      Alert.alert("GNR Wajib", "Silakan isi semua pilihan GNR sebelum submit.");
-      setisValidGNR(false);
-      completed = true;
-      // return; // penting: jangan lanjutkan submit kalau belum valid
+    if (!isValidGNR) {
+      // jika submit button di-klik
+      if (status === 0) {
+        if (selectedItem === "1 Jam") {
+          Alert.alert(
+            "GNR Wajib",
+            "Silakan isi semua pilihan GNR sebelum submit."
+          );
+        } else {
+          Alert.alert(
+            "GNR Wajib",
+            "Silakan isi minimal 1 pilihan GNR sebelum submit."
+          );
+        }
+        setisValidGNR(false);
+        completed = true;
+        return; // penting: jangan lanjutkan submit kalau belum valid
+      }
     } else {
       setisValidGNR(true);
       completed = false;
     }
 
     if (!selGroup) {
-      Alert.alert("Grpup Wajib", "Silakan isi semua pilihan .");
+      Alert.alert("Group Wajib", "Silakan pilih group sebelum submit.");
     } else {
       const submit = () => {
         const inspectionResults = inspectionData.map((item) => {
@@ -1734,20 +1748,22 @@ const Paraminspection2 = ({ route, navigation }) => {
           </Text>
         </View>
 
-        <>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                !agreed && styles.submitButtonDisabled,
-              ]}
-              onPress={() => handleSubmit(1)}
-              disabled={!agreed}
-            >
-              <Text style={styles.submitButtonText}>SAVE AS DRAFT</Text>
-            </TouchableOpacity>
-          </View>
-        </>
+        {selectedItem === "1 Jam" && (
+          <>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  !agreed && styles.submitButtonDisabled,
+                ]}
+                onPress={() => handleSubmit(1)}
+                disabled={!agreed}
+              >
+                <Text style={styles.submitButtonText}>SAVE AS DRAFT</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         <TouchableOpacity
           style={[
