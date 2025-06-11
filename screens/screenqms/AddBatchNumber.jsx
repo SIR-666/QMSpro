@@ -36,7 +36,7 @@ const AddBatchNumber = ({ navigation }) => {
   const fetchDraft = async () => {
     try {
       const response = await axios.get(
-        "http://10.0.2.2:5008/api/getsubmitedForBatch"
+        "http://10.24.0.82:5008/api/getsubmitedForBatch"
       );
       const data = response.data;
       // console.log(data);
@@ -59,7 +59,7 @@ const AddBatchNumber = ({ navigation }) => {
 
     try {
       // Kirim ke backend
-      await axios.post("http://10.0.2.2:5008/api/updateBatchNumber", {
+      await axios.post("http://10.24.0.82:5008/api/updateBatchNumber", {
         Batch_Number: batchNumber,
         Variant: selectedItem?.Variant,
         Product_Name: selectedItem?.Product_Name,
