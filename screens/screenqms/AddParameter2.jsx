@@ -87,6 +87,8 @@ const Paraminspection2 = ({ route, navigation }) => {
     getShiftByHour(moment(new Date()).tz("Asia/Jakarta").format("HH"))
   );
   const [selGroup, setselGroup] = useState("");
+  const [selectedItem, setSelectedItem] = useState(null);
+  const options = ["1 Jam", "30 Menit"];
 
   // console.log("time input :", formatDateToJakarta(timeinput));
 
@@ -696,18 +698,10 @@ const Paraminspection2 = ({ route, navigation }) => {
     return "";
   };
 
-  const handleOthersNoteChange = (index, text, column) => {
-    setInspectionData((prevData) => {
-      const updatedData = [...prevData];
-      const currentItem = updatedData[index];
-
-      if (!currentItem.results) currentItem.results = {};
-      if (!currentItem.results[column]) currentItem.results[column] = {};
-
-      currentItem.results[column]["OthersNote"] = text;
-      updatedData[index] = currentItem;
-      return updatedData;
-    });
+  const handleJenisPengukuran = (text) => {
+    Alert.alert("Success!", text);
+    console.log("jenis pengukuran : ", text);
+    setSelectedItem(text);
   };
 
   const handleInputChange = (text, index, gnr) => {
@@ -919,7 +913,7 @@ const Paraminspection2 = ({ route, navigation }) => {
     const isValidGNR = inspectionData.every((item) => item.gnr !== "");
     let completed;
 
-    if (!isValidGNR) {
+    if (!isValidGNR && selectedItem === "1 Jam") {
       Alert.alert("GNR Wajib", "Silakan isi semua pilihan GNR sebelum submit.");
       setisValidGNR(false);
       completed = true;
@@ -1356,6 +1350,26 @@ const Paraminspection2 = ({ route, navigation }) => {
           <Text></Text>
         )}
 
+        <View>
+          <Text>Jenis Pengukuran</Text>
+          {options.map((item, index) => (
+            <View
+              key={index}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 10,
+              }}
+            >
+              <Checkbox
+                status={selectedItem === item ? "checked" : "unchecked"}
+                onPress={() => handleJenisPengukuran(item)}
+              />
+              <Text>{item}</Text>
+            </View>
+          ))}
+        </View>
+
         {isLoading ? (
           <ActivityIndicator size="large" color={COLORS.blue} />
         ) : (
@@ -1738,10 +1752,11 @@ const Paraminspection2 = ({ route, navigation }) => {
         <TouchableOpacity
           style={[
             styles.submitButton,
-            (!agreed || !isValidGNR) && styles.submitButtonDisabled,
+            (!agreed || (!isValidGNR && selectedItem === "1 Jam")) &&
+              styles.submitButtonDisabled,
           ]}
           onPress={() => handleSubmit(0)}
-          disabled={!agreed || !isValidGNR} // <- ini dia yang penting
+          disabled={!agreed || (!isValidGNR && selectedItem === "1 Jam")} // <- ini dia yang penting
         >
           <Text style={styles.submitButtonText}>SUBMIT</Text>
         </TouchableOpacity>
