@@ -1,39 +1,32 @@
-import * as ScreenOrientation from "expo-screen-orientation";
-import { useFonts } from "expo-font";
-import * as Splashscreen from "expo-splash-screen";
-import { useCallback, useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useFonts } from "expo-font";
+import * as ScreenOrientation from "expo-screen-orientation";
+import * as Splashscreen from "expo-splash-screen";
+import { useCallback, useEffect, useState } from "react";
 import {
-  QMSsubmited,
-  SampleQuantity,
+  AddBatchNumber,
+  Failed,
   HomeQMS,
-  QMSdraft,
+  Onboarding,
   Paraminspection,
   Paraminspection2,
-  Onboarding,
-  Search,
   ParaminspectionDraft,
-  Successful,
-  Failed,
+  QMSdraft,
+  QMSsubmited,
+  SampleQuantity,
+  Search,
   Settings,
-  // EditGreentag,
-  // TagScanner,
+  Successful,
 } from "./screens";
 
-import BottomTabNavigation from "./navigation/BottomTabNavigation";
-import AuthTopTab from "./navigation/AuthTopTab";
-import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import AddCard from "./screens/setttings/AddCard";
-import { StyleSheet, Text, View, Alert } from "react-native";
 import messaging from "@react-native-firebase/messaging";
-import axios from "axios";
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { StatusBar } from "expo-status-bar";
+import { Alert } from "react-native";
+import AuthTopTab from "./navigation/AuthTopTab";
+import BottomTabNavigation from "./navigation/BottomTabNavigation";
 //import PushNotification from 'react-native-push-notification';
 
 const Stack = createNativeStackNavigator();
@@ -344,6 +337,11 @@ export default function App() {
         <Stack.Screen
           name="QMSsubmited"
           component={QMSsubmited}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AddBatchNumber"
+          component={AddBatchNumber}
           options={{ headerShown: false }}
         />
 

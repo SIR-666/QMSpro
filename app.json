@@ -11,10 +11,12 @@
       "resizeMode": "cover",
       "backgroundColor": "#EBD9CD"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.greenfields.ciltpro"
+      "bundleIdentifier": "com.greenfields.qmspro"
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -53,9 +55,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "eae3f39e-6745-4f07-9123-1ddeb8a5f727"
+        "projectId": "df6521b0-0b5f-4b98-88fa-7d879f95701d"
       }
     },
-    "owner": "sir666"
+    "owner": "raffyjo"
   }
 }

@@ -9,61 +9,31 @@ import DetailLaporanCILTGIGR from "./cilt/DetailLaporanCILTGIGR";
 import DetailLaporanShiftlyCILT from "./cilt/DetailLaporanShiftlyCILT";
 import EditCilt from "./cilt/EditCilt";
 import EditShiftHandOver from "./cilt/EditShiftHandOver";
-import ListCILT from "./cilt/ListCILT";
-import ListCILTDraft from "./cilt/ListCILTDraft";
-import ListShiftHandOver from "./cilt/ListShiftHandOver";
-import ShiftHandOver from "./cilt/ShiftHandOver";
 import CountryDetails from "./details/CountryDetails";
-import HotelDetails from "./details/HotelDetails";
-import HotelList from "./details/HotelList";
-import PlaceDetails from "./details/PlaceDetails";
-import PopularDestinations from "./details/PopularDesinations";
-import PopularHotels from "./details/PopularHotels";
-import Recommended from "./details/Recommended";
-import SelectRoom from "./details/SelectRoom";
-import SelectedRoom from "./details/SelectedRoom";
 import Home from "./home/Home";
-import HomeCILT from "./home/HomeCILT";
-import Location from "./location/Location";
-import inputMuatan from "./muatan/inputMuatan";
 import Onboarding from "./onboarding/Onboarding";
-import Payments from "./profile/Payments";
-import Profile from "./profile/Profile";
 import AllReviews from "./reviews/AllReviews";
 import AddReviews from "./reviews/add/AddReviews";
-import HotelSearch from "./search/HotelSearch";
 import Search from "./search/Search";
-import PaymentMethod from "./setttings/PaymentMethod";
 import Settings from "./setttings/Settings";
-import TopBookings from "./top/TopBookings";
-import TopInfo from "./top/TopInfo";
-import TopTrips from "./top/TopTrips";
 // import EditGreentag from "./greentag/editGreentag";
 // import TagScanner from "./greentag/tagScanner";
 import ChecklistScreen from "./greenSHIELD/CheckListPatrol";
 import EditchecklistPatrol from "./greenSHIELD/EditchecklistPatrol";
-import ListRecordPatrol from "./greenSHIELD/ListRecordPatrol";
-import ListRecordPatrolAsDarft from "./greenSHIELD/ListRecordPatrolAsDarft";
-import ListTemuanPatrol from "./greenSHIELD/ListTemuanPatrol";
-import Paraminspection from "./screenqms/AddParameter";
-import QMSdraft from "./screenqms/DraftQMS";
-import Paraminspection2 from "./screenqms/AddParameter2";
 import HomeQMS from "./home/HomeQMS";
-import SampleQuantity from "./screenqms/SampleQTY";
+import AddBatchNumber from "./screenqms/AddBatchNumber";
+import Paraminspection from "./screenqms/AddParameter";
+import Paraminspection2 from "./screenqms/AddParameter2";
 import ParaminspectionDraft from "./screenqms/AddParameterDraft";
+import QMSdraft from "./screenqms/DraftQMS";
+import SampleQuantity from "./screenqms/SampleQTY";
 import QMSsubmited from "./screenqms/SubmitedQMS";
 //import listGreentag from "./listgreentag/listGreentag";
 //import AddReviews from "./listgreentag/AddReviews";
 //import ListGreentag from "./listgreentag/listGreentag";
 
 export {
-  QMSsubmited,
-  ParaminspectionDraft,
-  SampleQuantity,
-  HomeQMS,
-  QMSdraft,
-  Paraminspection,
-  Paraminspection2,
+  AddBatchNumber,
   AddCilt,
   AddReviews,
   AllReviews,
@@ -78,8 +48,15 @@ export {
   EditShiftHandOver,
   Failed,
   Home,
+  HomeQMS,
   Onboarding,
+  Paraminspection,
+  Paraminspection2,
+  ParaminspectionDraft,
+  QMSdraft,
+  QMSsubmited,
   Registration,
+  SampleQuantity,
   Search,
   Settings,
   Signin,

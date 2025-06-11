@@ -1,33 +1,24 @@
 // import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import React from "react";
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
+  Alert,
+  Dimensions,
+  FlatList,
+  Image,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  Image,
-  Alert,
-  FlatList,
-  Dimensions,
+  View,
 } from "react-native";
 // import { Image } from "expo-image";
-import reusable from "../../components/Reusable/reusable.style";
-import {
-  AssetImage,
-  ReusableText,
-  HeightSpacer,
-  Recommendations,
-} from "../../components";
-import Places from "../../components/Home/Places";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { HeightSpacer } from "../../components";
+import { COLORS } from "../../constants/theme";
 // import styles from "./home.style";
-import BestHotels from "../../components/Home/BestHotels";
-import checkUser from "../../hook/checkUser";
-import { Color, FontFamily, FontSize, Border } from "../../GlobalStyles";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { Border, Color, FontSize } from "../../GlobalStyles";
+import checkUser from "../../hook/checkUser";
 
 const { width } = Dimensions.get("window");
 
@@ -65,6 +56,13 @@ const HomeQMS = ({ route, navigation }) => {
       title: "DRAFT",
       image: require("../../assets/draft.png"),
       link: "QMSdraft",
+      // link: "ShiftHandOver",
+    },
+    {
+      id: 4,
+      title: "ADD BATCH NUMBER",
+      image: require("../../assets/batch-number.png"),
+      link: "AddBatchNumber",
       // link: "ShiftHandOver",
     },
   ];
