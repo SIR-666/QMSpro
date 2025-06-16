@@ -1,31 +1,26 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import * as ScreenOrientation from "expo-screen-orientation";
 import moment from "moment-timezone";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Pressable,
-  Modal,
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ReusableOfflineUploadImage } from "../../components";
-import ReusableDatetime2 from "../../components/Reusable/ReusableDatetime2";
-import TimeOnlyPicker from "../../components/Reusable/ReusableDatetime5";
 import ReusableDatetime from "../../components/Reusable/ReusableDatetime3";
+import TimeOnlyPicker from "../../components/Reusable/ReusableDatetime5";
 import { COLORS } from "../../constants/theme";
-import URL from "../../components/url";
 
 // Get shift by hour
 const getShiftByHour = (hour) => {
@@ -61,6 +56,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
   const [productOptions, setProductOptions] = useState([]);
   const [product, setProduct] = useState("");
   const [productsize, setProductSize] = useState("");
+  const [productOrder, setProductOrder] = useState("");
 
   const [machine, setMachine] = useState("");
   const [batch, setBatch] = useState("2");
@@ -81,6 +77,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
   const [endProd, setEndProd] = useState(new Date());
   const [isValidGNR, setisValidGNR] = useState(false);
   const [timeinput, setTimeinput] = useState(new Date());
+  const [group, setGroup] = useState("");
   const [isSelected, setIsSelected] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [warningitem, setWarningitem] = useState("");
@@ -122,7 +119,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
   const fetchProductOptions = async (type) => {
     try {
       console.log("type :", type);
-      // const response = await fetch(`http://10.0.2.2:5002/api/sku/${type}`);
+      // const response = await fetch(`http://10.24.0.82:5002/api/sku/${type}`);
       const response = await fetch(`http://10.24.0.82:5008/api/sku/${type}`);
       const data = await response.json();
       setloadingDataInput(false);
@@ -136,7 +133,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
   const fetchDraft = async () => {
     try {
       // const response = await fetch(
-      //   "http://10.0.2.2:5002/api/getdraf-details/2025-05-03%2009:00:34.103"
+      //   "http://10.24.0.82:5002/api/getdraf-details/2025-05-03%2009:00:34.103"
       // );
       const response = await fetch(
         "http://10.24.0.82:5008/api/getdraf-details/2025-05-03%2009:00:34.103"
@@ -412,11 +409,11 @@ const ParaminspectionDraft = ({ route, navigation }) => {
 
     try {
       // const response = await axios.get(
-      //   `http://10.0.2.2:5002/api/getlistparma/${selectedProduct}`
+      //   `http://10.24.0.82:5002/api/getlistparma/${selectedProduct}`
       // );
 
       // const draftResponse = await fetch(
-      //   `http://10.0.2.2:5002/api/getdraf-details/${input_id}`
+      //   `http://10.24.0.82:5002/api/getdraf-details/${input_id}`
       // );
 
       const response = await axios.get(
@@ -460,6 +457,11 @@ const ParaminspectionDraft = ({ route, navigation }) => {
         draftData && draftData.length > 0
           ? JSON.parse(draftData[0].Parameter_Input)
           : [];
+
+      setLine(draftData[0].Filler);
+      setProductOrder(draftData[0].Product_Name);
+      setTimeinput(new Date(draftData[0].Input_At));
+      setGroup(draftData[0].Group);
 
       const formattedData = response.data.map((item) => {
         let parsedGood = {};
@@ -678,7 +680,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
         completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
       };
 
-      // const response = await fetch("http://10.0.2.2:5002/api/update-param", {
+      // const response = await fetch("http://10.24.0.82:5002/api/update-param", {
       //   method: "POST",
       //   headers: {
       //     "Content-Type": "application/json",
@@ -965,6 +967,32 @@ const ParaminspectionDraft = ({ route, navigation }) => {
               </View>
             </View>
             <View style={styles.row}>
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Filler *</Text>
+                <View style={styles.dropdownContainer}>
+                  <MaterialCommunityIcons
+                    name="line-scan"
+                    size={24}
+                    color={COLORS.lightBlue}
+                  />
+                  <Text style={{ marginLeft: 8 }}>{line}</Text>
+                </View>
+              </View>
+
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Product Order *</Text>
+                <View style={styles.dropdownContainer}>
+                  <MaterialCommunityIcons
+                    name="identifier"
+                    size={24}
+                    color={COLORS.lightBlue}
+                  />
+                  <Text style={{ marginLeft: 8 }}>{productOrder}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.row}>
               {/* Select Date and Select Time */}
               <View style={styles.halfInputGroup}>
                 <Text style={styles.label}>Production Date*</Text>
@@ -1000,6 +1028,34 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                 <Text style={styles.label}>Last Production *</Text>
                 <View style={styles.dropdownContainer}>
                   <TimeOnlyPicker date={endProd} setDate={setEndProd} />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Time Input</Text>
+                <View style={styles.dropdownContainer}>
+                  <MaterialCommunityIcons
+                    name="calendar-range"
+                    size={20}
+                    color={COLORS.lightBlue}
+                  />
+                  <Text style={{ marginLeft: 8 }}>
+                    {moment(timeinput).format("DD-MM-YYYY HH:mm")}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.halfInputGroup}>
+                <Text style={styles.label}>Group *</Text>
+                <View style={styles.dropdownContainer}>
+                  <MaterialCommunityIcons
+                    name="account-group"
+                    size={24}
+                    color={COLORS.lightBlue}
+                  />
+                  <Text style={{ marginLeft: 8 }}>{group}</Text>
                 </View>
               </View>
             </View>
@@ -1397,7 +1453,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    marginTop: 20,
+    marginTop: 12,
     marginBottom: 5,
   },
   labelsub: {

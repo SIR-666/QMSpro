@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ReusableOfflineUploadImage } from "../../components";
 import { formatDateToJakarta } from "../../components/Reusable/FormatDate";
 import ReusableDatetime2 from "../../components/Reusable/ReusableDatetime2";
 import ReusableDatetime from "../../components/Reusable/ReusableDatetime3";
@@ -26,8 +27,52 @@ import { masterGroupOptions } from "../../components/mastergroup";
 import { COLORS } from "../../constants/theme";
 
 // Define uploadImageToServer function here
-// Image upload function
 // Image upload function with improved error handling
+const uploadImageToServer = async (uri) => {
+  const apiUrl = "http://10.24.7.70:3003/upload"; // Image server URL
+  // const filename = localUri.split("/").pop();
+  const formData = new FormData();
+
+  formData.append("images", {
+    uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+    type: "image/jpeg", // Adjust based on your image type
+    name: uri.split("/").pop(), // This ensures the file has a name
+  });
+
+  try {
+    // console.log("Uploading image:", uri); // Log the image path being uploaded
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      body: formData,
+      // headers: {
+      //   "Content-Type": "multipart/form-data",
+      // },
+    });
+
+    if (!response.ok) {
+      // If the response is not OK, log the full response and throw an error
+      console.error(
+        "Failed to upload image",
+        response.status,
+        response.statusText
+      );
+      const responseText = await response.text(); // Get the raw response text for debugging
+      console.error("Response text:", responseText);
+      throw new Error(`Failed to upload image: ${response.statusText}`);
+    }
+
+    const responseJson = await response.json();
+    let serverImageUrl = responseJson.uploadedFiles[0];
+
+    // const serverImageUrl = `${apiUrl2}:${port33}/${responseJson.uploadedFiles[0]}`;
+    // console.log("Uploaded image URL:", serverImageUrl);
+    return serverImageUrl; // Return the server URL after upload
+  } catch (error) {
+    console.error("Image upload failed:", error);
+    throw new Error("Image upload failed");
+  }
+};
 
 // Get shift by hour
 const getShiftByHour = (hour) => {
@@ -110,7 +155,7 @@ const Paraminspection2 = ({ route, navigation }) => {
   const fetchProductOptions = async (type) => {
     try {
       console.log("type :", type);
-      // const response = await fetch(`http://10.0.2.2:5002/api/sku/${type}`);
+      // const response = await fetch(`http://10.24.0.82:5002/api/sku/${type}`);
       const response = await fetch(`http://10.24.0.82:5008/api/sku/${type}`);
       const data = await response.json();
       setloadingDataInput(false);
@@ -139,13 +184,17 @@ const Paraminspection2 = ({ route, navigation }) => {
     }
   }, [initialLine]);
 
-  const CheckProdverif = async (selectedProd) => {
+  const CheckProdverif = async (selectedProd, selectedShift) => {
     try {
       // Alert.alert(selectedProd);
       const existingData = await AsyncStorage.getItem("ProdVerif");
+      const existingShift = await AsyncStorage.getItem("shift");
+      console.log("data shift selected :", selectedShift);
+      console.log("data shift :", existingShift);
+      console.log("data varian selected :", selectedProd);
       console.log("data varian :", existingData);
       // console.log("data varian select :", selectedProd);
-      if (selectedProd === existingData) {
+      if (selectedProd === existingData && selectedShift === existingShift) {
         setProdverif(false);
         console.log("prodverif false");
       } else {
@@ -169,6 +218,7 @@ const Paraminspection2 = ({ route, navigation }) => {
   const handlesubmitverif = async () => {
     try {
       await AsyncStorage.setItem("ProdVerif", selectedProduct);
+      await AsyncStorage.setItem("shift", shift);
 
       fetchverifinputed({
         batchNumber,
@@ -190,29 +240,10 @@ const Paraminspection2 = ({ route, navigation }) => {
     }
   };
 
-  useEffect(() => {
-    const checkShift = async () => {
-      try {
-        console.log("shift:", shift);
-        const existingData = await AsyncStorage.getItem("shift");
-        if (shift === existingData) {
-          // setProdverif(false);
-        } else {
-          await AsyncStorage.setItem("shift", shift);
-          setProdverif(true);
-        }
-      } catch (storageError) {
-        console.error("Failed saving to AsyncStorage:", storageError);
-      }
-    };
-
-    checkShift();
-  }, [shift]);
-
   const handleprodChange = async (selectedProd, label) => {
     console.log("data varian select :", label);
 
-    CheckProdverif(label);
+    CheckProdverif(label, shift);
     setProductSize(selectedProd);
     setSelectedProduct(label);
     fetchInspectionData(selectedProd);
@@ -557,7 +588,7 @@ const Paraminspection2 = ({ route, navigation }) => {
 
     try {
       // const response = await axios.get(
-      //   `http://10.0.2.2:5002/api/getlistparma/${selectedProduct}`
+      //   `http://10.24.0.82:5002/api/getlistparma/${selectedProduct}`
       // );
       const response = await axios.get(
         `http://10.24.0.82:5008/api/getlistparma/${selectedProduct}`
@@ -752,6 +783,12 @@ const Paraminspection2 = ({ route, navigation }) => {
     });
   };
 
+  const handleImageSelected = (uri, index) => {
+    let data = [...inspectionData];
+    data[index].picture = uri; // Update picture field with uploaded image URI or local URI
+    setInspectionData(data);
+  };
+
   const fetchverifinputed = async (commonData) => {
     const checklistJson = {};
 
@@ -777,7 +814,7 @@ const Paraminspection2 = ({ route, navigation }) => {
     };
 
     console.log("verif data:", payloadverif);
-    // const response = await fetch("http://10.0.2.2:5002/api/post-verif", {
+    // const response = await fetch("http://10.24.0.82:5002/api/post-verif", {
     //   method: "POST",
     //   headers: {
     //     "Content-Type": "application/json",
@@ -823,6 +860,7 @@ const Paraminspection2 = ({ route, navigation }) => {
         completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
         group: selGroup,
       };
+      console.log("payload :", payload);
       const checklistJson = {};
       // if (prodverif === true) {
       //   isSelected.forEach((item) => {
@@ -848,7 +886,7 @@ const Paraminspection2 = ({ route, navigation }) => {
       //     completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
       //   };
 
-      //   // const response = await fetch("http://10.0.2.2:5002/api/post-verif", {
+      //   // const response = await fetch("http://10.24.0.82:5002/api/post-verif", {
       //   //   method: "POST",
       //   //   headers: {
       //   //     "Content-Type": "application/json",
@@ -873,7 +911,7 @@ const Paraminspection2 = ({ route, navigation }) => {
       //   }
       // }
 
-      // const response = await fetch("http://10.0.2.2:5002/api/post-param", {
+      // const response = await fetch("http://10.24.0.82:5002/api/post-param", {
       //   method: "POST",
       //   headers: {
       //     "Content-Type": "application/json",
@@ -941,7 +979,7 @@ const Paraminspection2 = ({ route, navigation }) => {
       Alert.alert("Group Wajib", "Silakan pilih group sebelum submit.");
     } else {
       const submit = () => {
-        const inspectionResults = inspectionData.map((item) => {
+        const inspectionResults = inspectionData.map(async (item) => {
           let resultsOutput = {};
 
           if (item.satuan !== null) {
@@ -958,11 +996,18 @@ const Paraminspection2 = ({ route, navigation }) => {
             });
           }
 
+          if (item.picture && item.picture.startsWith("file://")) {
+            // Hanya unggah jika gambar berupa file lokal
+            const serverImageUrl = await uploadImageToServer(item.picture);
+            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
+          }
+
           return {
             parameter: item.parameter,
             gnr: item.gnr,
             results: resultsOutput,
             remarks: item.remarks || "",
+            picture: item.picture,
           };
         });
 
@@ -980,6 +1025,7 @@ const Paraminspection2 = ({ route, navigation }) => {
           endProduction: endProd?.toISOString?.(),
           selectedProduct,
           isValidGNR: String(isValidGNR),
+          group: selGroup,
         });
       };
 
@@ -1056,6 +1102,18 @@ const Paraminspection2 = ({ route, navigation }) => {
     }));
     setInspectionData(clearedData);
   };
+
+  const handleStartProdChange = (newDate) => {
+    setStartProd(newDate); // cukup ini
+  };
+
+  // dan buat efek di luar
+  useEffect(() => {
+    const hour = moment(startProd).tz("Asia/Jakarta").format("HH");
+    // const shiftName = getShiftByHour(hour);
+    // setShift(shiftName);
+    CheckProdverif(selectedProduct, shift);
+  }, [startProd]);
 
   // console.log(isSelected);
   return (
@@ -1221,7 +1279,11 @@ const Paraminspection2 = ({ route, navigation }) => {
           <View style={styles.halfInputGroup}>
             <Text style={styles.label}>Start Production*</Text>
             <View style={styles.dropdownContainer}>
-              <ReusableDatetime2 date={startProd} setDate={setStartProd} />
+              <ReusableDatetime2
+                date={startProd}
+                setDate={setStartProd}
+                onChange={handleStartProdChange}
+              />
             </View>
           </View>
 
@@ -1693,19 +1755,20 @@ const Paraminspection2 = ({ route, navigation }) => {
                           />
                         </View>
 
-                        <TouchableOpacity
-                          style={[
-                            styles.submitButton,
-                            {
-                              alignItems: "flex-start",
-                              width: 100,
-                              height: 50,
-                              marginLeft: 30,
-                            },
-                          ]}
-                        >
-                          <Text style={styles.submitButtonText}>Capture</Text>
-                        </TouchableOpacity>
+                        <View style={{ width: 200 }}>
+                          {/* <Text style={styles.tableData}>Picture</Text> */}
+
+                          <View
+                            style={[styles.tableData, styles.centeredContent]}
+                          >
+                            <ReusableOfflineUploadImage
+                              onImageSelected={(uri) =>
+                                handleImageSelected(uri, index)
+                              }
+                              uploadImage={uploadImageToServer} // Pass upload function here
+                            />
+                          </View>
+                        </View>
                       </View>
                     ))
                   )}

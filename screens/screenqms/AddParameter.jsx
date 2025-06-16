@@ -4,11 +4,10 @@ import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import * as ScreenOrientation from "expo-screen-orientation";
 import moment from "moment-timezone";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,11 +17,9 @@ import {
 } from "react-native";
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ReusableOfflineUploadImage } from "../../components";
 import ReusableDatetime2 from "../../components/Reusable/ReusableDatetime2";
 import ReusableDatetime from "../../components/Reusable/ReusableDatetime3";
 import { COLORS } from "../../constants/theme";
-import URL from "../../components/url";
 
 // Define uploadImageToServer function here
 // Image upload function
@@ -144,7 +141,7 @@ const Paraminspection = ({ route, navigation }) => {
   const fetchProductOptions = async (type) => {
     try {
       console.log("type :", type);
-      const response = await fetch(`http://10.0.2.2:5002/api/sku/${type}`);
+      const response = await fetch(`http://10.24.0.82:5002/api/sku/${type}`);
       const data = await response.json();
       setloadingDataInput(false);
       setProductOptions(data);
@@ -243,7 +240,7 @@ const Paraminspection = ({ route, navigation }) => {
 
     try {
       const response = await axios.get(
-        `http://10.0.2.2:5002/api/getlistparma/${selectedProduct}`
+        `http://10.24.0.82:5002/api/getlistparma/${selectedProduct}`
       );
 
       if (!response.data || !Array.isArray(response.data)) {
@@ -479,7 +476,7 @@ const Paraminspection = ({ route, navigation }) => {
         completed: commonData.isValidGNR, // Bisa disesuaikan jika ada status lain
       };
 
-      const response = await fetch("http://10.0.2.2:5002/api/post-param", {
+      const response = await fetch("http://10.24.0.82:5002/api/post-param", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

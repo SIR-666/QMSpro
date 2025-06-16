@@ -1,11 +1,10 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import moment from "moment";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/theme";
 
-const ReusableDatetime2 = ({ date, setDate }) => {
+const ReusableDatetime2 = ({ date, setDate, onChange }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -18,6 +17,7 @@ const ReusableDatetime2 = ({ date, setDate }) => {
       const updatedDate = new Date(selectedDate);
       updatedDate.setHours(oldDate.getHours(), oldDate.getMinutes());
       setDate(updatedDate);
+      onChange?.(updatedDate); // panggil onChange dan kirim updatedDate
     }
   };
 
@@ -28,6 +28,7 @@ const ReusableDatetime2 = ({ date, setDate }) => {
       const updatedDate = new Date(oldDate);
       updatedDate.setHours(selectedTime.getHours(), selectedTime.getMinutes());
       setDate(updatedDate);
+      onChange?.(updatedDate); // panggil onChange dan kirim updatedDate
     }
   };
 

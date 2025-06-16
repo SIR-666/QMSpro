@@ -1,29 +1,23 @@
 // import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import React from "react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  SafeAreaView,
   Dimensions,
-  FlatList,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 // import { Image } from "expo-image";
 import { HeightSpacer } from "../../components";
 // import styles from "./home.style";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { ListItem } from "react-native-elements";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { COLORS } from "../../constants/theme";
 import { Border, Color, FontSize } from "../../GlobalStyles";
 import checkUser from "../../hook/checkUser";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Dropdown } from "react-native-element-dropdown";
-import { ListItem, Avatar } from "react-native-elements";
-import { COLORS, SIZES, TEXT } from "../../constants/theme";
 
 const { width, height } = Dimensions.get("window");
 
@@ -40,7 +34,7 @@ const QMSdraft = ({ navigation }) => {
 
   const fetchDraft = async () => {
     try {
-      // const response = await axios.get("http://10.0.2.2:5002/api/getdrafr");
+      // const response = await axios.get("http://10.24.0.82:5002/api/getdrafr");
       const response = await axios.get("http://10.24.0.82:5008/api/getdrafr");
       const data = response.data;
       // console.log(data);

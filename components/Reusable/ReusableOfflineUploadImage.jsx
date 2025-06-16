@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { COLORS } from "../../constants/theme";
 
 const ReusableOfflineUploadImage = ({ onImageSelected }) => {
