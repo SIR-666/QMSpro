@@ -19,8 +19,8 @@ import {
 import { Checkbox } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ReusableDatetime from "../../components/Reusable/ReusableDatetime3";
-import TimeOnlyPicker from "../../components/Reusable/ReusableDatetime5";
 import { COLORS } from "../../constants/theme";
+import { mapGroup } from "../utils/mapGroup";
 
 // Get shift by hour
 const getShiftByHour = (hour) => {
@@ -433,7 +433,9 @@ const ParaminspectionDraft = ({ route, navigation }) => {
       );
 
       setExDate(
-        inputAll?.Expiry_Date ? new Date(inputAll.Expiry_Date) : new Date()
+        inputAll?.Expiry_Date
+          ? moment(inputAll.Expiry_Date).toDate()
+          : new Date()
       );
 
       setStartProd(
@@ -1022,14 +1024,32 @@ const ParaminspectionDraft = ({ route, navigation }) => {
               <View style={styles.halfInputGroup}>
                 <Text style={styles.label}>Start Production*</Text>
                 <View style={styles.dropdownContainer}>
-                  <TimeOnlyPicker date={startProd} setDate={setStartProd} />
+                  <MaterialCommunityIcons
+                    name="calendar-range"
+                    size={20}
+                    color={COLORS.lightBlue}
+                  />
+                  <Text style={{ marginLeft: 8 }}>
+                    {`${moment(proddate).format("DD-MM-YYYY")} ${moment(
+                      startProd
+                    ).format("HH:mm")}`}
+                  </Text>
                 </View>
               </View>
 
               <View style={styles.halfInputGroup}>
                 <Text style={styles.label}>Last Production *</Text>
                 <View style={styles.dropdownContainer}>
-                  <TimeOnlyPicker date={endProd} setDate={setEndProd} />
+                  <MaterialCommunityIcons
+                    name="calendar-range"
+                    size={20}
+                    color={COLORS.lightBlue}
+                  />
+                  <Text style={{ marginLeft: 8 }}>
+                    {`${moment(proddate).format("DD-MM-YYYY")} ${moment(
+                      endProd
+                    ).format("HH:mm")}`}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -1057,7 +1077,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                     size={24}
                     color={COLORS.lightBlue}
                   />
-                  <Text style={{ marginLeft: 8 }}>{group}</Text>
+                  <Text style={{ marginLeft: 8 }}>{mapGroup(group)}</Text>
                 </View>
               </View>
             </View>
