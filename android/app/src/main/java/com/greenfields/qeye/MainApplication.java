@@ -1,4 +1,4 @@
-package com.greenfields.ciltpro;
+package com.greenfields.qeye;
 
 import android.app.Application;
 import android.content.res.Configuration;

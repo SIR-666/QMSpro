@@ -460,7 +460,9 @@ const ParaminspectionDraft = ({ route, navigation }) => {
 
       setLine(draftData[0].Filler);
       setProductOrder(draftData[0].Product_Name);
-      setTimeinput(new Date(draftData[0].Input_At));
+      const utcTime = new Date(draftData[0].Input_At); // tetap UTC
+
+      setTimeinput(utcTime);
       setGroup(draftData[0].Group);
 
       const formattedData = response.data.map((item) => {
@@ -1071,14 +1073,14 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                     {/* <View style={{ width: "10%" }}>
                         <Text style={styles.tableCaption}>Done</Text>
                       </View> */}
-                    <View style={{ width: 200 }}>
+                    <View style={{ width: 100 }}>
                       <Text style={styles.tableCaption}>Parameter</Text>
                     </View>
 
-                    <View style={{ width: 300 }}>
+                    <View style={{ width: 200 }}>
                       <Text style={styles.tableCaption}>Good</Text>
                     </View>
-                    <View style={{ width: 250 }}>
+                    <View style={{ width: 200 }}>
                       <Text style={styles.tableCaption}>Need</Text>
                     </View>
                     <View style={{ width: 280 }}>
@@ -1109,9 +1111,9 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                           }, // selang-seling
                         ]}
                       >
-                        <View style={{ width: 200 }}>
+                        <View style={{ width: 100 }}>
                           <Text style={styles.tableDataParam}>
-                            {item.parameter}
+                            {item.parameter.replace(/_/g, "\n")}
                           </Text>
                         </View>
 
@@ -1134,7 +1136,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                             ]}
                             value={item.results}
                             keyboardType="numeric"
-                            width={300}
+                            width={200}
                             onChangeText={(text) =>
                               handleInputChange(text, index, "Good")
                             }
@@ -1150,7 +1152,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                             style={{
                               alignItems: "center",
                               justifyContent: "center",
-                              width: 300,
+                              width: 200,
                               height: "auto",
                               marginLeft: 10,
                               backgroundColor:
@@ -1194,7 +1196,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                             ]}
                             value={item.results}
                             keyboardType="numeric"
-                            width={250}
+                            width={200}
                             marginLeft={10}
                             onChangeText={(text) =>
                               handleInputChange(text, index, "Need")
@@ -1206,7 +1208,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                             style={{
                               fontStyle: "italic",
                               color: "gray",
-                              width: 250,
+                              width: 200,
                               marginLeft: 10,
                             }}
                           >
@@ -1216,7 +1218,7 @@ const ParaminspectionDraft = ({ route, navigation }) => {
                           <View
                             style={{
                               alignItems: "flex-start",
-                              width: 250,
+                              width: 200,
                               marginLeft: 10,
                               backgroundColor:
                                 item.gnr === "Need" ? "#fff3cd" : "transparent", // Kuning kalau aktif

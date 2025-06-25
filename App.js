@@ -34,8 +34,8 @@ const Stack = createNativeStackNavigator();
 // Fungsi untuk mengirim token ke server
 const sendTokenToServer = async (token) => {
   console.log("registrasi Token:", token);
-  const apiUrl2 = process.env.URL2;
-  const port3 = process.env.PORT_NO;
+  const apiUrl2 = "http://10.24.7.70";
+  const port3 = 8080;
   const endpoint = `${apiUrl2}:${port3}/notification/registerToken`;
 
   console.log("endpoint ", endpoint);
@@ -78,15 +78,15 @@ export default function App() {
   }, []);
 
   // Lock orientation before rendering
-  ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT)
-    .then(() => console.log("Orientation locked globally."))
-    .catch((err) => console.error("Failed to lock orientation:", err));
+  // ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT)
+  //   .then(() => console.log("Orientation locked globally."))
+  //   .catch((err) => console.error("Failed to lock orientation:", err));
 
   //CHEK IF USER CONNECT IN COMPANY NETWORK
   useEffect(() => {
     const checkNetworkConnection = async () => {
       try {
-        const apiUrl = process.env.URL;
+        const apiUrl = "http://10.24.0.82:5008";
         const response = await fetch(`${apiUrl}/api/getdrafr`); // or your API endpoint
         if (response.ok) {
           // Connection is active, you can proceed with API calls or data retrieval

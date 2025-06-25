@@ -3,7 +3,7 @@
     "name": "GreenSync",
     "slug": "greensync",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.greenfields.qmspro"
+      "bundleIdentifier": "com.greenfields.qeye"
     },
     "android": {
       "googleServicesFile": "./google-services.json",
@@ -29,7 +29,7 @@
           "apiKey": "AIzaSyBmLj_6tI-wVz3yrcNXg6qTi1VPAOmzMNY"
         }
       },
-      "package": "com.greenfields.qmspro"
+      "package": "com.greenfields.qeye"
     },
     "web": {
       "favicon": "./assets/ciltproicon2.png"
@@ -55,9 +55,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "df6521b0-0b5f-4b98-88fa-7d879f95701d"
+        "projectId": "eae3f39e-6745-4f07-9123-1ddeb8a5f727"
       }
     },
-    "owner": "raffyjo"
+    "owner": "sir666"
   }
 }

@@ -81,9 +81,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace 'com.greenfields.ciltpro'
+    namespace 'com.greenfields.qeye'
     defaultConfig {
-        applicationId 'com.greenfields.ciltpro'
+        applicationId 'com.greenfields.qeye'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

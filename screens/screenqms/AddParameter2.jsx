@@ -943,8 +943,116 @@ const Paraminspection2 = ({ route, navigation }) => {
   };
 
   // Submit form and handle image upload
-  const handleSubmit = (status) => {
-    // Format inspection rows
+  // const handleSubmit = (status) => {
+  //   // Format inspection rows
+  //   const isValidGNR =
+  //     selectedItem === "1 Jam"
+  //       ? inspectionData.every((item) => item.gnr !== "")
+  //       : inspectionData.some((item) => item.gnr !== "");
+
+  //   let completed;
+
+  //   if (!isValidGNR) {
+  //     // jika submit button di-klik
+  //     if (status === 0) {
+  //       if (selectedItem === "1 Jam") {
+  //         Alert.alert(
+  //           "GNR Wajib",
+  //           "Silakan isi semua pilihan GNR sebelum submit."
+  //         );
+  //       } else {
+  //         Alert.alert(
+  //           "GNR Wajib",
+  //           "Silakan isi minimal 1 pilihan GNR sebelum submit."
+  //         );
+  //       }
+  //       setisValidGNR(false);
+  //       completed = true;
+  //       return; // penting: jangan lanjutkan submit kalau belum valid
+  //     }
+  //   } else {
+  //     setisValidGNR(true);
+  //     completed = false;
+  //   }
+
+  //   if (!selGroup) {
+  //     Alert.alert("Group Wajib", "Silakan pilih group sebelum submit.");
+  //   } else {
+  //     const submit = () => {
+  //       const inspectionResults = inspectionData.map(async (item) => {
+  //         let resultsOutput = {};
+
+  //         if (item.satuan !== null) {
+  //           // Input numerik
+  //           resultsOutput = item.results;
+  //         } else if (item.gnr === "Need" || item.gnr === "Reject") {
+  //           resultsOutput = {};
+  //           Object.entries(item.results || {}).forEach(([key, val]) => {
+  //             if (key === "OthersNote") {
+  //               resultsOutput["OthersNote"] = val;
+  //             } else {
+  //               resultsOutput[key] = val === true;
+  //             }
+  //           });
+  //         }
+
+  //         if (item.picture && item.picture.startsWith("file://")) {
+  //           // Hanya unggah jika gambar berupa file lokal
+  //           const serverImageUrl = await uploadImageToServer(item.picture);
+  //           updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
+  //         }
+
+  //         return {
+  //           parameter: item.parameter,
+  //           gnr: item.gnr,
+  //           results: resultsOutput,
+  //           remarks: item.remarks || "",
+  //           picture: item.picture,
+  //         };
+  //       });
+
+  //       fetchParameterInputed(inspectionResults, {
+  //         batchNumber,
+  //         selectedProduct,
+  //         productionDate: proddate?.toISOString?.(),
+  //         expiredDate:
+  //           exdate instanceof Date && !isNaN(exdate)
+  //             ? exdate.toISOString()
+  //             : null,
+
+  //         line,
+  //         startProduction: startProd?.toISOString?.(),
+  //         endProduction: endProd?.toISOString?.(),
+  //         selectedProduct,
+  //         isValidGNR: String(isValidGNR),
+  //         group: selGroup,
+  //       });
+  //     };
+
+  //     // Jika status 0, munculkan konfirmasi terlebih dahulu
+  //     if (status === 0) {
+  //       Alert.alert(
+  //         "Konfirmasi Submit",
+  //         "Apakah Anda yakin ingin submit data ini?",
+  //         [
+  //           {
+  //             text: "Batal",
+  //             style: "cancel",
+  //           },
+  //           {
+  //             text: "Yakin",
+  //             onPress: submit,
+  //           },
+  //         ]
+  //       );
+  //     } else {
+  //       submit();
+  //       Alert.alert("Draft", "Parameter input akan disimpan di draft");
+  //     }
+  //   }
+  // };
+
+  const handleSubmit = async (status) => {
     const isValidGNR =
       selectedItem === "1 Jam"
         ? inspectionData.every((item) => item.gnr !== "")
@@ -952,23 +1060,34 @@ const Paraminspection2 = ({ route, navigation }) => {
 
     let completed;
 
+    // if (!isValidGNR) {
+    //   if (status === 0) {
+    //     Alert.alert(
+    //       "GNR Wajib",
+    //       selectedItem === "1 Jam"
+    //         ? "Silakan isi semua pilihan GNR sebelum submit."
+    //         : "Silakan isi minimal 1 pilihan GNR sebelum submit."
+    //     );
+    //     setisValidGNR(false);
+    //     completed = true;
+    //     return;
+    //   }
+    // } else {
+    //   setisValidGNR(true);
+    //   completed = false;
+    // }
+
     if (!isValidGNR) {
-      // jika submit button di-klik
       if (status === 0) {
-        if (selectedItem === "1 Jam") {
-          Alert.alert(
-            "GNR Wajib",
-            "Silakan isi semua pilihan GNR sebelum submit."
-          );
-        } else {
-          Alert.alert(
-            "GNR Wajib",
-            "Silakan isi minimal 1 pilihan GNR sebelum submit."
-          );
-        }
+        Alert.alert(
+          "GNR Wajib",
+          selectedItem === "1 Jam"
+            ? "Silakan isi semua pilihan GNR sebelum submit."
+            : "Silakan isi minimal 1 pilihan GNR sebelum submit."
+        );
         setisValidGNR(false);
         completed = true;
-        return; // penting: jangan lanjutkan submit kalau belum valid
+        return;
       }
     } else {
       setisValidGNR(true);
@@ -977,16 +1096,17 @@ const Paraminspection2 = ({ route, navigation }) => {
 
     if (!selGroup) {
       Alert.alert("Group Wajib", "Silakan pilih group sebelum submit.");
-    } else {
-      const submit = () => {
-        const inspectionResults = inspectionData.map(async (item) => {
+      return;
+    }
+
+    const submit = async () => {
+      const inspectionResults = await Promise.all(
+        inspectionData.map(async (item) => {
           let resultsOutput = {};
 
           if (item.satuan !== null) {
-            // Input numerik
             resultsOutput = item.results;
           } else if (item.gnr === "Need" || item.gnr === "Reject") {
-            resultsOutput = {};
             Object.entries(item.results || {}).forEach(([key, val]) => {
               if (key === "OthersNote") {
                 resultsOutput["OthersNote"] = val;
@@ -996,10 +1116,9 @@ const Paraminspection2 = ({ route, navigation }) => {
             });
           }
 
+          let pictureUrl = item.picture;
           if (item.picture && item.picture.startsWith("file://")) {
-            // Hanya unggah jika gambar berupa file lokal
-            const serverImageUrl = await uploadImageToServer(item.picture);
-            updatedItem.picture = serverImageUrl; // Ganti URI lokal dengan URL server
+            pictureUrl = await uploadImageToServer(item.picture);
           }
 
           return {
@@ -1007,48 +1126,45 @@ const Paraminspection2 = ({ route, navigation }) => {
             gnr: item.gnr,
             results: resultsOutput,
             remarks: item.remarks || "",
-            picture: item.picture,
+            picture: pictureUrl,
           };
-        });
+        })
+      );
 
-        fetchParameterInputed(inspectionResults, {
-          batchNumber,
-          selectedProduct,
-          productionDate: proddate?.toISOString?.(),
-          expiredDate:
-            exdate instanceof Date && !isNaN(exdate)
-              ? exdate.toISOString()
-              : null,
+      await fetchParameterInputed(inspectionResults, {
+        batchNumber,
+        selectedProduct,
+        productionDate: proddate?.toISOString?.(),
+        expiredDate:
+          exdate instanceof Date && !isNaN(exdate)
+            ? exdate.toISOString()
+            : null,
+        line,
+        startProduction: startProd?.toISOString?.(),
+        endProduction: endProd?.toISOString?.(),
+        selectedProduct,
+        isValidGNR: String(isValidGNR),
+        group: selGroup,
+      });
+    };
 
-          line,
-          startProduction: startProd?.toISOString?.(),
-          endProduction: endProd?.toISOString?.(),
-          selectedProduct,
-          isValidGNR: String(isValidGNR),
-          group: selGroup,
-        });
-      };
-
-      // Jika status 0, munculkan konfirmasi terlebih dahulu
-      if (status === 0) {
-        Alert.alert(
-          "Konfirmasi Submit",
-          "Apakah Anda yakin ingin submit data ini?",
-          [
-            {
-              text: "Batal",
-              style: "cancel",
+    if (status === 0) {
+      Alert.alert(
+        "Konfirmasi Submit",
+        "Apakah Anda yakin ingin submit data ini?",
+        [
+          { text: "Batal", style: "cancel" },
+          {
+            text: "Yakin",
+            onPress: async () => {
+              await submit();
             },
-            {
-              text: "Yakin",
-              onPress: submit,
-            },
-          ]
-        );
-      } else {
-        submit();
-        Alert.alert("Draft", "Parameter input akan disimpan di draft");
-      }
+          },
+        ]
+      );
+    } else {
+      await submit();
+      Alert.alert("Draft", "Parameter input akan disimpan di draft");
     }
   };
 
@@ -1461,15 +1577,15 @@ const Paraminspection2 = ({ route, navigation }) => {
                     {/* <View style={{ width: "10%" }}>
                         <Text style={styles.tableCaption}>Done</Text>
                       </View> */}
-                    <View style={{ width: 200 }}>
+                    <View style={{ width: 100 }}>
                       <Text style={styles.tableCaption}>Parameter</Text>
                     </View>
 
-                    <View style={{ width: 300 }}>
+                    <View style={{ width: 150 }}>
                       <Text style={styles.tableCaption}>Good</Text>
                     </View>
-                    <View style={{ width: 250 }}>
-                      <Text style={styles.tableCaption}>Need</Text>
+                    <View style={{ width: 200 }}>
+                      <Text style={styles.tableCaption}>Need Action</Text>
                     </View>
                     <View style={{ width: 280 }}>
                       <Text style={styles.tableCaption}>Reject</Text>
@@ -1499,9 +1615,9 @@ const Paraminspection2 = ({ route, navigation }) => {
                           }, // selang-seling
                         ]}
                       >
-                        <View style={{ width: 200 }}>
+                        <View style={{ width: 100 }}>
                           <Text style={styles.tableDataParam}>
-                            {item.parameter}
+                            {item.parameter.replace(/_/g, "\n")}
                           </Text>
                         </View>
 
@@ -1538,7 +1654,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                             ]}
                             value={item.results}
                             keyboardType="numeric"
-                            width={300}
+                            width={200}
                             onChangeText={(text) =>
                               handleInputChange(text, index, "Good")
                             }
@@ -1554,7 +1670,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                             style={{
                               alignItems: "center",
                               justifyContent: "center",
-                              width: 300,
+                              width: 150,
                               height: "auto",
                               marginLeft: 10,
                               backgroundColor:
@@ -1572,7 +1688,9 @@ const Paraminspection2 = ({ route, navigation }) => {
                                     marginBottom: 2,
                                   }}
                                 >
-                                  <Text style={{ color: "#fff" }}>- {key}</Text>
+                                  <Text style={{ color: "#fff", fontSize: 12 }}>
+                                    - {key}
+                                  </Text>
                                 </View>
                               )
                             )}
@@ -1605,7 +1723,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                             ]}
                             value={item.results}
                             keyboardType="numeric"
-                            width={250}
+                            width={200}
                             marginLeft={10}
                             onChangeText={(text) =>
                               handleInputChange(text, index, "Need")
@@ -1617,7 +1735,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                             style={{
                               fontStyle: "italic",
                               color: "gray",
-                              width: 250,
+                              width: 200,
                               marginLeft: 10,
                             }}
                           >
@@ -1627,7 +1745,7 @@ const Paraminspection2 = ({ route, navigation }) => {
                           <View
                             style={{
                               alignItems: "flex-start",
-                              width: 250,
+                              width: 200,
                               marginLeft: 10,
                               backgroundColor:
                                 item.gnr === "Need" ? "#fff3cd" : "transparent", // Kuning kalau aktif
@@ -1966,7 +2084,7 @@ const styles = StyleSheet.create({
   tableDataParam: {
     // color: "#fff",
     // fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 13,
     textAlign: "left", // Center-align text in cells
   },
   tableData2: {

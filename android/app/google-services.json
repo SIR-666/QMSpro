@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "997062489159",
-    "project_id": "ciltpro",
-    "storage_bucket": "ciltpro.appspot.com"
+    "project_number": "175083533261",
+    "project_id": "q-eye-ba57d",
+    "storage_bucket": "q-eye-ba57d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:997062489159:android:caf750d8acf557ccc12d62",
+        "mobilesdk_app_id": "1:175083533261:android:8c3350386004f2e37b0a84",
         "android_client_info": {
-          "package_name": "com.greenfields.ciltpro"
+          "package_name": "com.greenfields.qeye"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBDmVh3FejQ9yCIpPsplVdJUzafHtugsbY"
+          "current_key": "AIzaSyChTD72CtLGABLvE5g8mHtlE6bKc3HK0Y8"
         }
       ],
       "services": {

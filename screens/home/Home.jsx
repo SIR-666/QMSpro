@@ -121,7 +121,7 @@ const Home = ({ navigation }) => {
 
   const fetchUserData = async () => {
     try {
-      const urlApi = process.env.URL4;
+      const urlApi = "http://10.24.7.70:8080";
       // console.log(urlApi);
       const email = await AsyncStorage.getItem("user");
       const fcmToken = await AsyncStorage.getItem("fcmToken");
@@ -172,7 +172,7 @@ const Home = ({ navigation }) => {
   useEffect(() => {
     const checkDraftData = async () => {
       try {
-        const apiUrl = process.env.URL;
+        const apiUrl = "http://10.24.0.82:5008";
         const response = await fetch(`${apiUrl}/api/getdrafr`);
 
         if (response.ok) {

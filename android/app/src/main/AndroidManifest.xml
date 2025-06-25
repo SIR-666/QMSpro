@@ -31,7 +31,7 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="com.greenfields.ciltpro"/>
+        <data android:scheme="com.greenfields.qeye"/>
         <data android:scheme="exp+ciltpro"/>
       </intent-filter>
     </activity>
